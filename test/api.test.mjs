@@ -110,17 +110,25 @@ test('wedding dates coverage — which days are available per model', async () =
 // were returned; a "fail" usually means the key is deterministic-only.
 
 // Member counts confirmed by CI on 2026-06-29.
-// UKMO: ukmo_seamless is deterministic-only; ukmo_global/mogreps_g return HTTP 400 — not available.
 const PROBE_MODELS = [
-  { key: 'icon_eu',                     provider: 'DWD (Germany)',      expectedMembers: 39 },
-  { key: 'icon_seamless',               provider: 'DWD seamless',       expectedMembers: 39 },
-  { key: 'gfs025',                      provider: 'NOAA GFS 0.25°',     expectedMembers: 30 },
-  { key: 'gfs_seamless',               provider: 'NOAA GFS seamless',   expectedMembers: 30 },
-  { key: 'gem_global',                  provider: 'CMC (Canada)',        expectedMembers: 20 },
-  { key: 'meteofrance_seamless',        provider: 'Météo-France',        expectedMembers: null },
-  { key: 'meteofrance_arpege_world',   provider: 'MF ARPEGE World',     expectedMembers: null },
-  { key: 'bom_access_global_ensemble', provider: 'BOM (Australia)',      expectedMembers: 17 },
-  { key: 'ukmo_seamless',              provider: 'UKMO (det. only)',     expectedMembers: null },
+  { key: 'icon_eu',                      provider: 'DWD ICON EU',           expectedMembers: 39 },
+  { key: 'icon_seamless',                provider: 'DWD ICON seamless',      expectedMembers: 39 },
+  { key: 'gfs025',                       provider: 'NOAA GFS 0.25°',         expectedMembers: 30 },
+  { key: 'gfs_seamless',                provider: 'NOAA GFS seamless',       expectedMembers: 30 },
+  { key: 'gem_global',                   provider: 'CMC GEM Global',          expectedMembers: 20 },
+  { key: 'bom_access_global_ensemble',  provider: 'BOM ACCESS Global',       expectedMembers: 17 },
+  // UK MetOffice Global 20km — trying likely key names
+  { key: 'ukmo_global_ensemble',         provider: 'UKMO Global (cand.)',     expectedMembers: null },
+  { key: 'ukmo_global_deterministic_10km', provider: 'UKMO 10km (cand.)',    expectedMembers: null },
+  { key: 'ukmo_seamless',               provider: 'UKMO seamless (cand.)',   expectedMembers: null },
+  { key: 'uk_met_office',               provider: 'UKMO (cand.)',            expectedMembers: null },
+  // MeteoSwiss ICON CH1/CH2
+  { key: 'icon_ch1',                     provider: 'MeteoSwiss CH1 (cand.)', expectedMembers: null },
+  { key: 'icon_ch2',                     provider: 'MeteoSwiss CH2 (cand.)', expectedMembers: null },
+  { key: 'meteoswiss_icon_ch1',         provider: 'MeteoSwiss CH1b (cand.)', expectedMembers: null },
+  // AIGEFS 0.25°
+  { key: 'aigefs_025',                   provider: 'AIGEFS (cand.)',          expectedMembers: null },
+  { key: 'aigefs',                       provider: 'AIGEFS b (cand.)',        expectedMembers: null },
 ];
 
 test('additional provider probe — logs member counts for candidate models', async () => {
