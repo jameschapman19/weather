@@ -6,7 +6,7 @@
   <title>Wedding Weather — St Paulet de Caisson</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -29,70 +29,87 @@
 
     <div id="app" class="app hidden">
 
-      <section class="day-summary">
-        <h2 class="section-title">Daily Overview</h2>
-        <p class="section-sub">Daytime temperatures (07:00–21:00 local) &middot; 10th percentile &ndash; median &ndash; 90th percentile</p>
-        <div class="day-cards" id="day-cards"></div>
-      </section>
-
-      <section class="chart-section" id="section-ifs">
-        <div class="model-header">
-          <div class="model-title-group">
-            <h2>ECMWF IFS Ensemble</h2>
-            <p class="model-desc">51 members &middot; 0.4&deg; resolution &middot; 15-day operational forecast</p>
-          </div>
-          <span class="model-badge ifs-badge">IFS</span>
-        </div>
-        <p class="model-unavailable hidden" id="unavail-ifs">&#x26A0;&#xFE0F; IFS data could not be loaded.</p>
-        <div class="chart-wrap" id="wrap-ifs">
-          <canvas id="chart-ifs"></canvas>
+      <!-- ── FRIENDLY SECTION ─────────────────────────────────────── -->
+      <section class="glance-section">
+        <h2 class="section-title">What to expect</h2>
+        <p class="section-sub">Daytime (07:00–22:00 local) &middot; based on ECMWF ensemble median &middot; hover charts below for hourly detail</p>
+        <div class="glance-cards" id="glance-cards"></div>
+        <div class="uncertainty-note">
+          The shaded range shows where 80% of ensemble members fall &mdash; wider means less certainty.
+          Forecasts improve significantly in the final 5&ndash;7 days.
         </div>
       </section>
 
-      <section class="chart-section" id="section-aifs">
-        <div class="model-header">
-          <div class="model-title-group">
-            <h2>ECMWF AIFS Ensemble</h2>
-            <p class="model-desc">50 members &middot; 0.25&deg; resolution &middot; AI-based data-driven model</p>
+      <!-- ── TECHNICAL SECTION ───────────────────────────────────── -->
+      <section class="tech-section">
+        <h2 class="section-title">Ensemble Analysis</h2>
+        <p class="section-sub">For the meteorologically curious &middot; 10&ndash;90th percentile fan, 25&ndash;75th interquartile band, and median</p>
+
+        <!-- Model summary table -->
+        <div class="model-table-card">
+          <div class="model-table-head">
+            <div></div>
+            <div class="mth-model ifs-text">IFS &mdash; 51 members</div>
+            <div class="mth-model aifs-text">AIFS &mdash; 50 members</div>
           </div>
-          <span class="model-badge aifs-badge">AIFS</span>
+          <div id="model-rows"></div>
+          <div class="model-table-foot">10th &mdash; median &mdash; 90th percentile &middot; daytime 07:00&ndash;22:00</div>
         </div>
-        <p class="model-unavailable hidden" id="unavail-aifs">&#x26A0;&#xFE0F; AIFS data could not be loaded.</p>
-        <div class="chart-wrap" id="wrap-aifs">
-          <canvas id="chart-aifs"></canvas>
+
+        <!-- IFS chart -->
+        <div class="chart-section" id="section-ifs">
+          <div class="model-header">
+            <div class="model-title-group">
+              <h3>ECMWF IFS Ensemble</h3>
+              <p class="model-desc">Integrated Forecasting System &middot; 51 members &middot; 0.4&deg; &middot; <span id="ifs-key-badge"></span></p>
+            </div>
+            <span class="model-badge ifs-badge">IFS</span>
+          </div>
+          <p class="model-unavailable hidden" id="unavail-ifs"></p>
+          <div class="chart-wrap" id="wrap-ifs">
+            <canvas id="chart-ifs"></canvas>
+          </div>
+        </div>
+
+        <!-- AIFS chart -->
+        <div class="chart-section" id="section-aifs">
+          <div class="model-header">
+            <div class="model-title-group">
+              <h3>ECMWF AIFS Ensemble</h3>
+              <p class="model-desc">Artificial Intelligence Integrated Forecasting System &middot; 50 members &middot; 0.25&deg; &middot; <span id="aifs-key-badge"></span></p>
+            </div>
+            <span class="model-badge aifs-badge">AIFS</span>
+          </div>
+          <p class="model-unavailable hidden" id="unavail-aifs"></p>
+          <div class="chart-wrap" id="wrap-aifs">
+            <canvas id="chart-aifs"></canvas>
+          </div>
+        </div>
+
+        <!-- Comparison chart -->
+        <div class="chart-section">
+          <div class="model-header">
+            <div class="model-title-group">
+              <h3>Model Comparison</h3>
+              <p class="model-desc">IFS vs AIFS &middot; median and interquartile range &middot; agreement reveals forecast confidence</p>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chart-comparison"></canvas>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend-box">
+          <h4>Reading the charts</h4>
+          <div class="legend-items">
+            <div class="legend-item"><span class="legend-swatch sw-outer"></span><span><strong>10–90th percentile</strong> — 80% of ensemble members lie within this range</span></div>
+            <div class="legend-item"><span class="legend-swatch sw-inner"></span><span><strong>25–75th percentile</strong> — the interquartile range; the most likely 50%</span></div>
+            <div class="legend-item"><span class="legend-swatch sw-median"></span><span><strong>Median</strong> — half the members are above, half below</span></div>
+          </div>
+          <p class="legend-note">Day boundaries are marked with darker vertical gridlines. Hover anywhere on a chart to see the full percentile breakdown at that hour.</p>
         </div>
       </section>
-
-      <section class="chart-section" id="section-comparison">
-        <div class="model-header">
-          <div class="model-title-group">
-            <h2>Model Comparison</h2>
-            <p class="model-desc">IFS vs AIFS &middot; median &amp; 25&ndash;75th percentile band</p>
-          </div>
-        </div>
-        <div class="chart-wrap">
-          <canvas id="chart-comparison"></canvas>
-        </div>
-      </section>
-
-      <div class="legend-box">
-        <h3>How to read these charts</h3>
-        <div class="legend-items">
-          <div class="legend-item">
-            <span class="legend-swatch swatch-outer"></span>
-            <span><strong>10&ndash;90th percentile</strong> &mdash; 80% of ensemble members fall within this range</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-swatch swatch-inner"></span>
-            <span><strong>25&ndash;75th percentile</strong> &mdash; the central 50% of members (most likely range)</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-swatch swatch-median"></span>
-            <span><strong>Median</strong> &mdash; the middle forecast; half the members are above and half below</span>
-          </div>
-        </div>
-        <p class="legend-note">A wider band indicates greater forecast uncertainty. Models agree when their medians are close.</p>
-      </div>
 
     </div>
 
@@ -105,14 +122,11 @@
   </main>
 
   <footer>
-    <p>
-      Data from <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a>
-      &middot; ECMWF IFS &amp; AIFS Ensemble Forecasts
-    </p>
+    <p>Data from <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> &middot; ECMWF IFS &amp; AIFS Ensemble Forecasts</p>
     <p class="last-updated" id="last-updated"></p>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>

@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  schedule:
+    # Run daily at 07:00 UTC as the wedding approaches
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+
+jobs:
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run unit tests
+        run: npm test
+
+  api-tests:
+    name: Open-Meteo API Integration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Test ensemble API model availability
+        run: npm run test:api
+        # Mark as informational — API tests may fail if forecast horizon not yet reached.
+        # Remove continue-on-error once the IFS model key is confirmed.
+        continue-on-error: true

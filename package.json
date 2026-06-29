@@ -1,0 +1,9 @@
+{
+  "name": "wedding-weather",
+  "type": "module",
+  "scripts": {
+    "test":     "node --test test/unit.test.mjs",
+    "test:api": "node --test test/api.test.mjs",
+    "test:all": "node --test test/unit.test.mjs test/api.test.mjs"
+  }
+}
