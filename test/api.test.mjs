@@ -110,14 +110,19 @@ test('wedding dates coverage — which days are available per model', async () =
 // were returned; a "fail" usually means the key is deterministic-only.
 
 const PROBE_MODELS = [
-  { key: 'icon_eu',                     provider: 'DWD (Germany)',    expectedMembers: 40 },
-  { key: 'icon_seamless',               provider: 'DWD seamless',     expectedMembers: 40 },
-  { key: 'gfs025',                      provider: 'NOAA GFS 0.25°',   expectedMembers: 31 },
-  { key: 'gfs_seamless',               provider: 'NOAA GFS seamless', expectedMembers: 31 },
-  { key: 'gem_global',                  provider: 'CMC (Canada)',      expectedMembers: 21 },
-  { key: 'meteofrance_seamless',        provider: 'Météo-France',      expectedMembers: null },
-  { key: 'meteofrance_arpege_world',   provider: 'MF ARPEGE World',   expectedMembers: null },
-  { key: 'bom_access_global_ensemble', provider: 'BOM (Australia)',    expectedMembers: 18 },
+  { key: 'icon_eu',                     provider: 'DWD (Germany)',         expectedMembers: 40 },
+  { key: 'icon_seamless',               provider: 'DWD seamless',          expectedMembers: 40 },
+  { key: 'gfs025',                      provider: 'NOAA GFS 0.25°',        expectedMembers: 31 },
+  { key: 'gfs_seamless',               provider: 'NOAA GFS seamless',      expectedMembers: 31 },
+  { key: 'gem_global',                  provider: 'CMC (Canada)',           expectedMembers: 21 },
+  { key: 'meteofrance_seamless',        provider: 'Météo-France',           expectedMembers: null },
+  { key: 'meteofrance_arpege_world',   provider: 'MF ARPEGE World',        expectedMembers: null },
+  { key: 'bom_access_global_ensemble', provider: 'BOM (Australia)',         expectedMembers: 18 },
+  // UK Met Office candidates — checking which key the ensemble API accepts
+  { key: 'ukmo_global',                 provider: 'UKMO (candidate)',       expectedMembers: null },
+  { key: 'ukmo_seamless',              provider: 'UKMO seamless (cand.)',   expectedMembers: null },
+  { key: 'mogreps_g',                  provider: 'UKMO MOGREPS-G (cand.)', expectedMembers: null },
+  { key: 'uk_deterministic_10km',      provider: 'UKMO determ. (cand.)',   expectedMembers: null },
 ];
 
 test('additional provider probe — logs member counts for candidate models', async () => {
