@@ -45,16 +45,7 @@
         <h2 class="section-title">Ensemble Analysis</h2>
         <p class="section-sub">For the meteorologically curious &middot; 10&ndash;90th percentile fan, 25&ndash;75th interquartile band, and median</p>
 
-        <!-- Model summary table -->
-        <div class="model-table-card">
-          <div class="model-table-head">
-            <div></div>
-            <div class="mth-model ifs-text">IFS &mdash; 50 members</div>
-            <div class="mth-model aifs-text">AIFS &mdash; 50 members</div>
-          </div>
-          <div id="model-rows"></div>
-          <div class="model-table-foot">10th &mdash; median &mdash; 90th percentile &middot; daytime 07:00&ndash;22:00</div>
-        </div>
+        <!-- Model summary table (populated dynamically by app.js) -->
 
         <!-- IFS chart -->
         <div class="chart-section" id="section-ifs">
@@ -86,12 +77,27 @@
           </div>
         </div>
 
+        <!-- ICON EU chart -->
+        <div class="chart-section" id="section-icon">
+          <div class="model-header">
+            <div class="model-title-group">
+              <h3>DWD ICON EU Ensemble</h3>
+              <p class="model-desc">Icosahedral Nonhydrostatic model &middot; 39 members &middot; 0.0625&deg; &middot; <span id="icon-key-badge"></span></p>
+            </div>
+            <span class="model-badge icon-badge">ICON</span>
+          </div>
+          <p class="model-unavailable hidden" id="unavail-icon"></p>
+          <div class="chart-wrap" id="wrap-icon">
+            <canvas id="chart-icon"></canvas>
+          </div>
+        </div>
+
         <!-- Comparison chart -->
         <div class="chart-section">
           <div class="model-header">
             <div class="model-title-group">
               <h3>Model Comparison</h3>
-              <p class="model-desc">IFS vs AIFS &middot; median and interquartile range &middot; agreement reveals forecast confidence</p>
+              <p class="model-desc">IFS &middot; AIFS &middot; ICON EU &middot; GFS &mdash; median and interquartile range &middot; agreement reveals forecast confidence</p>
             </div>
           </div>
           <div class="chart-wrap">
@@ -122,7 +128,7 @@
   </main>
 
   <footer>
-    <p>Data from <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> &middot; ECMWF IFS &amp; AIFS Ensemble Forecasts</p>
+    <p>Data from <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> &middot; ECMWF IFS &amp; AIFS &middot; DWD ICON EU &middot; NOAA GFS Ensemble Forecasts</p>
     <p class="last-updated" id="last-updated"></p>
   </footer>
 

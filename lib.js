@@ -14,9 +14,18 @@ export const WEDDING_DAYS = [
   { date: '2026-07-15', display: '15 July' },
 ];
 
-// ecmwf_ifs04 is deterministic-only; ecmwf_ifs025 is the ensemble key (50 members).
-export const IFS_MODEL_KEYS  = ['ecmwf_ifs025'];
-export const AIFS_MODEL_KEYS = ['ecmwf_aifs025'];
+// All ensemble models. `keys` are tried in order; first success wins.
+// `detail: true` → gets its own plume chart. All models appear in comparison.
+// Member counts confirmed by CI probe on 2026-06-29.
+// Note: ecmwf_ifs025 output is 3-hourly so some timesteps will have null stats.
+// Note: ecmwf_ifs04 is deterministic-only — do NOT add it here.
+// Note: meteofrance_seamless / meteofrance_arpege_world are deterministic-only.
+export const MODELS = [
+  { keys: ['ecmwf_ifs025'],  id: 'ifs',  name: 'ECMWF IFS',  shortName: 'IFS',  members: 50, r: 37,  g: 99,  b: 235, detail: true  },
+  { keys: ['ecmwf_aifs025'], id: 'aifs', name: 'ECMWF AIFS', shortName: 'AIFS', members: 50, r: 22,  g: 163, b: 74,  detail: true  },
+  { keys: ['icon_eu'],       id: 'icon', name: 'ICON EU',    shortName: 'ICON', members: 39, r: 234, g: 88,  b: 12,  detail: true  },
+  { keys: ['gfs025'],        id: 'gfs',  name: 'GFS',        shortName: 'GFS',  members: 30, r: 147, g: 51,  b: 234, detail: false },
+];
 
 // ─── Stats ─────────────────────────────────────────────────────────────────────
 
@@ -80,6 +89,7 @@ export function daytimeSummary(data, dateStr) {
     }, []);
     if (!idxs.length) { out[name] = null; continue; }
     const get = fn => idxs.map(i => fn(data.stats[i])).filter(Number.isFinite);
+    if (!get(s => s.p50).length) { out[name] = null; continue; }
     out[name] = {
       lo:  Math.min(...get(s => s.p10)),
       hi:  Math.max(...get(s => s.p90)),
@@ -101,20 +111,22 @@ export function dayName(dateStr) {
 }
 
 export function tempDesc(medianC) {
-  if (medianC == null) return { label: 'Unknown',       colour: '#94a3b8', advice: '' };
-  if (medianC < 18)   return { label: 'Cool',           colour: '#60a5fa', advice: 'Light layers may be welcome in the evening.' };
-  if (medianC < 23)   return { label: 'Mild',           colour: '#4ade80', advice: 'Comfortable weather for outdoor celebrations.' };
-  if (medianC < 27)   return { label: 'Warm',           colour: '#a3e635', advice: 'A lovely warm day — ideal for outdoor events.' };
-  if (medianC < 31)   return { label: 'Hot',            colour: '#facc15', advice: 'Plan for shade and keep guests well hydrated.' };
-  if (medianC < 35)   return { label: 'Very Hot',       colour: '#fb923c', advice: 'Ensure ample shade, fans, and cold drinks.' };
-  return               { label: 'Extremely Hot',         colour: '#f87171', advice: 'Prioritise cooling — misters or air-conditioned spaces will help.' };
+  if (medianC == null) return { label: 'Unknown',      colour: '#94a3b8', advice: '' };
+  if (medianC < 18)   return { label: 'Cool',          colour: '#60a5fa', advice: 'Light layers may be welcome in the evening.' };
+  if (medianC < 23)   return { label: 'Mild',          colour: '#4ade80', advice: 'Comfortable weather for outdoor celebrations.' };
+  if (medianC < 27)   return { label: 'Warm',          colour: '#a3e635', advice: 'A lovely warm day — ideal for outdoor events.' };
+  if (medianC < 31)   return { label: 'Hot',           colour: '#facc15', advice: 'Plan for shade and keep guests well hydrated.' };
+  if (medianC < 35)   return { label: 'Very Hot',      colour: '#fb923c', advice: 'Ensure ample shade, fans, and cold drinks.' };
+  return               { label: 'Extremely Hot',        colour: '#f87171', advice: 'Prioritise cooling — misters or air-conditioned spaces will help.' };
 }
 
-export function modelAgreement(ifsSummary, aifsSummary) {
-  if (!ifsSummary?.all || !aifsSummary?.all) return null;
-  const diff = Math.abs(ifsSummary.all.med - aifsSummary.all.med);
-  if (diff < 1)  return { label: 'Excellent agreement', detail: `Medians within ${diff.toFixed(1)}°C` };
-  if (diff < 2)  return { label: 'Good agreement',      detail: `Medians within ${diff.toFixed(1)}°C` };
-  if (diff < 4)  return { label: 'Moderate spread',     detail: `Medians differ by ${diff.toFixed(1)}°C` };
-  return          { label: 'Models diverge',            detail: `Medians differ by ${diff.toFixed(1)}°C — forecast is less certain` };
+// Agreement across all available model medians for a day.
+export function multiModelAgreement(summaries) {
+  const meds = summaries.map(s => s?.all?.med).filter(Number.isFinite);
+  if (meds.length < 2) return null;
+  const spread = Math.max(...meds) - Math.min(...meds);
+  if (spread < 1)  return { label: 'Excellent agreement', detail: `All models within ${spread.toFixed(1)}°C` };
+  if (spread < 2)  return { label: 'Good agreement',      detail: `Spread of ${spread.toFixed(1)}°C across models` };
+  if (spread < 4)  return { label: 'Moderate spread',     detail: `Spread of ${spread.toFixed(1)}°C — some uncertainty` };
+  return            { label: 'Models diverge',            detail: `Spread of ${spread.toFixed(1)}°C — forecast is less certain` };
 }

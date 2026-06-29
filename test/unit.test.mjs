@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { pct, statsAt, processRaw, daytimeSummary, dayName, tempDesc, modelAgreement } from '../lib.js';
+import { pct, statsAt, processRaw, daytimeSummary, dayName, tempDesc, multiModelAgreement } from '../lib.js';
 
 // ─── pct() ────────────────────────────────────────────────────────────────────
 
@@ -162,21 +162,21 @@ test('tempDesc: all labels have non-empty advice', () => {
   }
 });
 
-// ─── modelAgreement() ─────────────────────────────────────────────────────────
+// ─── multiModelAgreement() ────────────────────────────────────────────────────
 
-test('modelAgreement: excellent when medians identical', () => {
+test('multiModelAgreement: excellent when medians identical', () => {
   const summ = { all: { med: 28 } };
-  const result = modelAgreement(summ, summ);
+  const result = multiModelAgreement([summ, summ]);
   assert.ok(result.label.toLowerCase().includes('excellent'));
 });
 
-test('modelAgreement: diverge when medians differ by 5°C', () => {
+test('multiModelAgreement: diverge when medians differ by 5°C', () => {
   const a = { all: { med: 28 } };
   const b = { all: { med: 33 } };
-  assert.ok(modelAgreement(a, b).label.toLowerCase().includes('diverge'));
+  assert.ok(multiModelAgreement([a, b]).label.toLowerCase().includes('diverge'));
 });
 
-test('modelAgreement: returns null when either model is missing', () => {
-  assert.equal(modelAgreement(null, { all: { med: 28 } }), null);
-  assert.equal(modelAgreement({ all: { med: 28 } }, null), null);
+test('multiModelAgreement: returns null when fewer than 2 valid summaries', () => {
+  assert.equal(multiModelAgreement([null, { all: { med: 28 } }]), null);
+  assert.equal(multiModelAgreement([{ all: { med: 28 } }]), null);
 });

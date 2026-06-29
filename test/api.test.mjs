@@ -62,7 +62,10 @@ test('ecmwf_ifs025 — returns 50 ensemble members and can be processed', async 
   assert.equal(memberKeys.length, 50, `Expected 50 members, got ${memberKeys.length}`);
   const result = processRaw(raw);
   assert.ok(result.count >= 1);
-  assert.ok(result.stats.every(s => s.p50 !== null), 'Some p50 values are null');
+  // IFS025 is 3-hourly so ~2/3 of timesteps have null stats — check ≥33% are non-null
+  const nonNull = result.stats.filter(s => s.p50 !== null).length;
+  assert.ok(nonNull / result.stats.length >= 0.33,
+    `Only ${nonNull}/${result.stats.length} timesteps have non-null p50 (expected ≥33%)`);
 });
 
 // ── AIFS model ────────────────────────────────────────────────────────────────
