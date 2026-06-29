@@ -45,8 +45,6 @@
         <h2 class="section-title">Ensemble Analysis</h2>
         <p class="section-sub">For the meteorologically curious &middot; 10&ndash;90th percentile fan, 25&ndash;75th interquartile band, and median</p>
 
-        <!-- Model summary table (populated dynamically by app.js) -->
-
         <!-- IFS chart -->
         <div class="chart-section" id="section-ifs">
           <div class="model-header">
@@ -57,8 +55,13 @@
             <span class="model-badge ifs-badge">IFS</span>
           </div>
           <p class="model-unavailable hidden" id="unavail-ifs"></p>
-          <div class="chart-wrap" id="wrap-ifs">
-            <canvas id="chart-ifs"></canvas>
+          <div id="wrap-ifs">
+            <p class="chart-sub-label">Temperature</p>
+            <div class="chart-wrap"><canvas id="chart-ifs"></canvas></div>
+            <div class="hidden" id="wind-section-ifs">
+              <p class="chart-sub-label">Wind Speed (10 m)</p>
+              <div class="chart-wrap"><canvas id="chart-wind-ifs"></canvas></div>
+            </div>
           </div>
         </div>
 
@@ -72,8 +75,13 @@
             <span class="model-badge aifs-badge">AIFS</span>
           </div>
           <p class="model-unavailable hidden" id="unavail-aifs"></p>
-          <div class="chart-wrap" id="wrap-aifs">
-            <canvas id="chart-aifs"></canvas>
+          <div id="wrap-aifs">
+            <p class="chart-sub-label">Temperature</p>
+            <div class="chart-wrap"><canvas id="chart-aifs"></canvas></div>
+            <div class="hidden" id="wind-section-aifs">
+              <p class="chart-sub-label">Wind Speed (10 m)</p>
+              <div class="chart-wrap"><canvas id="chart-wind-aifs"></canvas></div>
+            </div>
           </div>
         </div>
 
@@ -87,21 +95,39 @@
             <span class="model-badge icon-badge">ICON</span>
           </div>
           <p class="model-unavailable hidden" id="unavail-icon"></p>
-          <div class="chart-wrap" id="wrap-icon">
-            <canvas id="chart-icon"></canvas>
+          <div id="wrap-icon">
+            <p class="chart-sub-label">Temperature</p>
+            <div class="chart-wrap"><canvas id="chart-icon"></canvas></div>
+            <div class="hidden" id="wind-section-icon">
+              <p class="chart-sub-label">Wind Speed (10 m)</p>
+              <div class="chart-wrap"><canvas id="chart-wind-icon"></canvas></div>
+            </div>
           </div>
         </div>
 
-        <!-- Comparison chart -->
+        <!-- Temperature comparison chart -->
         <div class="chart-section">
           <div class="model-header">
             <div class="model-title-group">
-              <h3>Model Comparison</h3>
+              <h3>Model Comparison &mdash; Temperature</h3>
               <p class="model-desc">IFS &middot; AIFS &middot; ICON EU &middot; GFS &mdash; median and interquartile range &middot; agreement reveals forecast confidence</p>
             </div>
           </div>
           <div class="chart-wrap">
             <canvas id="chart-comparison"></canvas>
+          </div>
+        </div>
+
+        <!-- Wind comparison chart -->
+        <div class="chart-section">
+          <div class="model-header">
+            <div class="model-title-group">
+              <h3>Model Comparison &mdash; Wind Speed</h3>
+              <p class="model-desc">IFS &middot; AIFS &middot; ICON EU &middot; GFS &mdash; ensemble median and interquartile range at 10 m</p>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chart-wind-comparison"></canvas>
           </div>
         </div>
 

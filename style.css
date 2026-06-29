@@ -245,6 +245,31 @@ main { max-width: 1140px; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
   line-height: 1.45;
 }
 
+.glance-wind {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+
+.glance-wind-badge {
+  display: inline-block;
+  padding: 0.18rem 0.65rem;
+  border-radius: 20px;
+  border: 1px solid;
+  font-size: 0.73rem;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.glance-wind-advice {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
 .uncertainty-note {
   text-align: center;
   font-size: 0.8rem;
@@ -384,6 +409,17 @@ main { max-width: 1140px; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
 
 .chart-wrap { position: relative; height: 380px; }
 @media (max-width: 640px) { .chart-wrap { height: 260px; } .chart-section { padding: 1.1rem 0.75rem 0.9rem; } }
+
+.chart-sub-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 1.4rem 0 0.4rem;
+}
+
+.chart-sub-label:first-child { margin-top: 0; }
 
 .model-unavailable {
   color: #92400e;

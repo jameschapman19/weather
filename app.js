@@ -1,6 +1,6 @@
 import {
   CONFIG, WEDDING_DAYS, MODELS,
-  pct, processRaw, daytimeSummary, dayName, tempDesc, multiModelAgreement,
+  pct, processRaw, daytimeSummary, dayName, tempDesc, windDesc, multiModelAgreement,
 } from './lib.js';
 
 // ─── API ──────────────────────────────────────────────────────────────────────
@@ -9,7 +9,7 @@ async function fetchModel(key) {
   const u = new URL('https://ensemble-api.open-meteo.com/v1/ensemble');
   u.searchParams.set('latitude',   CONFIG.lat);
   u.searchParams.set('longitude',  CONFIG.lon);
-  u.searchParams.set('hourly',     'temperature_2m');
+  u.searchParams.set('hourly',     'temperature_2m,wind_speed_10m');
   u.searchParams.set('models',     key);
   u.searchParams.set('start_date', CONFIG.start);
   u.searchParams.set('end_date',   CONFIG.end);
@@ -40,6 +40,7 @@ async function fetchFirstWorking(model) {
 // ─── Formatting ───────────────────────────────────────────────────────────────
 
 const fmtT   = v => v == null ? '–' : `${Math.round(v)}°`;
+const fmtW   = v => v == null ? '–' : `${Math.round(v)} km/h`;
 const hourOf = t => parseInt(t.slice(11, 13), 10);
 
 function tooltipDateFn(times) {
@@ -72,12 +73,31 @@ function renderGlance(results) {
     const hi = allHi.length ? Math.max(...allHi) : null;
 
     const scale = v => Math.max(0, Math.min(100, ((v - 18) / 24) * 100));
-    const pLo  = lo != null ? scale(lo)         : 20;
-    const pHi  = hi != null ? scale(hi)         : 80;
-    const pMed = overallMed  != null ? scale(overallMed) : 50;
+    const pLo  = lo != null ? scale(lo)        : 20;
+    const pHi  = hi != null ? scale(hi)        : 80;
+    const pMed = overallMed != null ? scale(overallMed) : 50;
 
     // Time-of-day: prefer IFS, fallback through models
     const tod = (slot) => summaries.find(s => s?.[slot]?.med != null)?.[slot]?.med ?? null;
+
+    // Daytime wind median across all models
+    const windP50s = [];
+    for (const { data } of results) {
+      if (!data?.windStats) continue;
+      const p50s = data.times.reduce((acc, t, i) => {
+        if (t.startsWith(day.date)) {
+          const h = hourOf(t);
+          if (h >= 7 && h <= 22) {
+            const v = data.windStats[i]?.p50;
+            if (Number.isFinite(v)) acc.push(v);
+          }
+        }
+        return acc;
+      }, []);
+      if (p50s.length) windP50s.push(pct(p50s, 50));
+    }
+    const overallWindMed = windP50s.length ? pct(windP50s, 50) : null;
+    const wd = windDesc(overallWindMed);
 
     // Model rows for the card
     const modelRows = results.map(({ model, data }) => {
@@ -121,6 +141,10 @@ function renderGlance(results) {
         <div class="tod-sep">→</div>
         <div class="tod-item"><div class="tod-label">Evening</div><div class="tod-temp">${fmtT(tod('evening'))}C</div></div>
       </div>
+      ${overallWindMed != null ? `<div class="glance-wind">
+        <span class="glance-wind-badge" style="background:${wd.colour}20;color:${wd.colour};border-color:${wd.colour}40">${wd.label} · ~${Math.round(overallWindMed)} km/h</span>
+        ${wd.advice ? `<span class="glance-wind-advice">${wd.advice}</span>` : ''}
+      </div>` : ''}
       ${modelRows}
       ${agree ? `<div class="glance-agree">${agree.label} · ${agree.detail}</div>` : ''}
       ${desc.advice ? `<div class="glance-advice">${desc.advice}</div>` : ''}
@@ -149,7 +173,7 @@ function gridColorFn(times) {
     ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.04)';
 }
 
-function sharedScales(times) {
+function sharedScales(times, yLabel = 'Temperature (°C)', yTick = v => `${v}°C`) {
   return {
     x: {
       ticks: { maxRotation:0, font:{family:"'Jost',sans-serif",size:11}, color:'#6b5f58', callback:xTickFn(times), maxTicksLimit:48 },
@@ -157,8 +181,8 @@ function sharedScales(times) {
       border: { color: 'rgba(0,0,0,0.1)' },
     },
     y: {
-      title: { display:true, text:'Temperature (°C)', font:{family:"'Jost',sans-serif",size:11}, color:'#6b5f58' },
-      ticks: { font:{family:"'Jost',sans-serif",size:11}, color:'#6b5f58', callback:v=>`${v}°C` },
+      title: { display:true, text:yLabel, font:{family:"'Jost',sans-serif",size:11}, color:'#6b5f58' },
+      ticks: { font:{family:"'Jost',sans-serif",size:11}, color:'#6b5f58', callback:yTick },
       grid:   { color: 'rgba(0,0,0,0.04)' },
       border: { color: 'rgba(0,0,0,0.1)' },
     },
@@ -167,9 +191,13 @@ function sharedScales(times) {
 
 // ─── Plume chart ──────────────────────────────────────────────────────────────
 
-function plumeChart(canvasId, times, stats, r, g, b) {
+function plumeChart(canvasId, times, stats, r, g, b, {
+  yLabel = 'Temperature (°C)',
+  yTick  = v => `${v}°C`,
+  fmtVal = v => fmtT(v) + 'C',
+} = {}) {
   const ctx = document.getElementById(canvasId);
-  if (!ctx) return null;
+  if (!ctx || !stats) return null;
   const c = a => rgba(r, g, b, a);
 
   const ds = [
@@ -206,23 +234,27 @@ function plumeChart(canvasId, times, stats, r, g, b) {
             label: () => null,
             afterBody: items => {
               const s = stats[items[0].dataIndex];
-              return [`Median: ${fmtT(s.p50)}C`, `50% range: ${fmtT(s.p25)}–${fmtT(s.p75)}C`, `80% range: ${fmtT(s.p10)}–${fmtT(s.p90)}C`];
+              return [`Median: ${fmtVal(s.p50)}`, `50% range: ${fmtVal(s.p25)}–${fmtVal(s.p75)}`, `80% range: ${fmtVal(s.p10)}–${fmtVal(s.p90)}`];
             },
           },
         },
       },
-      scales: sharedScales(times),
+      scales: sharedScales(times, yLabel, yTick),
     },
   });
 }
 
 // ─── Multi-model comparison chart ────────────────────────────────────────────
 
-function comparisonChart(results) {
-  const ctx = document.getElementById('chart-comparison');
+function comparisonChart(canvasId, results, statKey = 'stats', {
+  yLabel = 'Temperature (°C)',
+  yTick  = v => `${v}°C`,
+  fmtVal = v => fmtT(v) + 'C',
+} = {}) {
+  const ctx = document.getElementById(canvasId);
   if (!ctx) return null;
 
-  const available = results.filter(r => r.data);
+  const available = results.filter(r => r.data?.[statKey]);
   if (!available.length) return null;
   const times = available[0].data.times;
 
@@ -232,10 +264,11 @@ function comparisonChart(results) {
   for (const { model, data } of available) {
     const { r, g, b, name } = model;
     const base = ds.length;
+    const series = data[statKey];
     ds.push(
-      { label:`_${model.id}_p25`, data:data.stats.map(s=>s.p25), borderWidth:0, borderColor:'transparent', backgroundColor:'transparent', pointRadius:0, tension:0.35, fill:false },
-      { label:`${name} 25–75th`, data:data.stats.map(s=>s.p75), borderWidth:0, borderColor:'transparent', backgroundColor:rgba(r,g,b,0.18), pointRadius:0, tension:0.35, fill:base },
-      { label:`${name} Median`,  data:data.stats.map(s=>s.p50), borderColor:rgba(r,g,b,1), backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.35, fill:false },
+      { label:`_${model.id}_p25`, data:series.map(s=>s.p25), borderWidth:0, borderColor:'transparent', backgroundColor:'transparent', pointRadius:0, tension:0.35, fill:false },
+      { label:`${name} 25–75th`, data:series.map(s=>s.p75), borderWidth:0, borderColor:'transparent', backgroundColor:rgba(r,g,b,0.18), pointRadius:0, tension:0.35, fill:base },
+      { label:`${name} Median`,  data:series.map(s=>s.p50), borderColor:rgba(r,g,b,1), backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.35, fill:false },
     );
     legendEntries.push(
       { text:`${name} 25–75th`, fillStyle:rgba(r,g,b,0.28), strokeStyle:'transparent', pointStyle:'rect', lineWidth:0 },
@@ -260,19 +293,25 @@ function comparisonChart(results) {
             afterBody: items => {
               const i = items[0].dataIndex;
               return available.map(({ model, data }) => {
-                const s = data.stats[i];
-                return `${model.shortName.padEnd(5)}: ${fmtT(s.p50)}C  (${fmtT(s.p25)}–${fmtT(s.p75)})`;
+                const s = data[statKey][i];
+                return `${model.shortName.padEnd(5)}: ${fmtVal(s.p50)}  (${fmtVal(s.p25)}–${fmtVal(s.p75)})`;
               });
             },
           },
         },
       },
-      scales: sharedScales(times),
+      scales: sharedScales(times, yLabel, yTick),
     },
   });
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
+
+const WIND_YAXIS = {
+  yLabel: 'Wind Speed (km/h)',
+  yTick:  v => `${Math.round(v)} km/h`,
+  fmtVal: fmtW,
+};
 
 async function main() {
   const $status = document.getElementById('status');
@@ -307,15 +346,19 @@ async function main() {
         wrap?.classList.add('hidden');
         continue;
       }
-      // Show which key succeeded
       document.getElementById(`${model.id}-key-badge`)?.replaceChildren(
         Object.assign(document.createElement('code'), { textContent: key })
       );
       plumeChart(`chart-${model.id}`, data.times, data.stats, model.r, model.g, model.b);
+      if (data.windStats) {
+        plumeChart(`chart-wind-${model.id}`, data.times, data.windStats, model.r, model.g, model.b, WIND_YAXIS);
+        document.getElementById(`wind-section-${model.id}`)?.classList.remove('hidden');
+      }
     }
 
-    // Comparison chart (all models)
-    comparisonChart(results);
+    // Comparison charts (temperature + wind)
+    comparisonChart('chart-comparison', results, 'stats');
+    comparisonChart('chart-wind-comparison', results, 'windStats', WIND_YAXIS);
 
     document.getElementById('last-updated').textContent =
       `Loaded ${new Date().toLocaleString('en-GB', { dateStyle:'medium', timeStyle:'short' })}`;

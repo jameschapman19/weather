@@ -3,7 +3,7 @@
 export const CONFIG = {
   lat:   44.275,
   lon:   4.527,
-  start: '2026-07-13',
+  start: '2026-07-11',
   end:   '2026-07-15',
   tz:    'Europe/Paris',
 };
@@ -55,16 +55,26 @@ export function statsAt(members, idx) {
 export function processRaw(raw) {
   const { hourly } = raw;
   const times = hourly.time;
-  const memberKeys = Object.keys(hourly)
+
+  const tempKeys = Object.keys(hourly)
     .filter(k => /^temperature_2m_member\d+$/.test(k))
     .sort();
-  if (!memberKeys.length) {
+  if (!tempKeys.length) {
     const allKeys = Object.keys(hourly).join(', ');
     throw new Error(`No member columns found. Available keys: ${allKeys}`);
   }
-  const members = memberKeys.map(k => hourly[k]);
-  const stats   = times.map((_, i) => statsAt(members, i));
-  return { times, stats, count: memberKeys.length };
+  const tempMembers = tempKeys.map(k => hourly[k]);
+  const stats = times.map((_, i) => statsAt(tempMembers, i));
+
+  const windKeys = Object.keys(hourly)
+    .filter(k => /^wind_speed_10m_member\d+$/.test(k))
+    .sort();
+  const windMembers = windKeys.map(k => hourly[k]);
+  const windStats = windMembers.length
+    ? times.map((_, i) => statsAt(windMembers, i))
+    : null;
+
+  return { times, stats, windStats, count: tempKeys.length };
 }
 
 // ─── Derived summaries ────────────────────────────────────────────────────────
@@ -118,6 +128,17 @@ export function tempDesc(medianC) {
   if (medianC < 31)   return { label: 'Hot',           colour: '#facc15', advice: 'Plan for shade and keep guests well hydrated.' };
   if (medianC < 35)   return { label: 'Very Hot',      colour: '#fb923c', advice: 'Ensure ample shade, fans, and cold drinks.' };
   return               { label: 'Extremely Hot',        colour: '#f87171', advice: 'Prioritise cooling — misters or air-conditioned spaces will help.' };
+}
+
+// Beaufort-inspired wind description (speed in km/h).
+export function windDesc(speedKmh) {
+  if (speedKmh == null) return { label: 'Unknown',         colour: '#94a3b8', advice: '' };
+  if (speedKmh < 6)     return { label: 'Calm',            colour: '#94a3b8', advice: 'Very still — could feel warm with little airflow.' };
+  if (speedKmh < 20)    return { label: 'Light breeze',    colour: '#4ade80', advice: 'A pleasant gentle breeze.' };
+  if (speedKmh < 29)    return { label: 'Moderate breeze', colour: '#a3e635', advice: 'A lovely refreshing breeze — ideal for outdoor events.' };
+  if (speedKmh < 39)    return { label: 'Fresh breeze',    colour: '#facc15', advice: 'Noticeably breezy — light decorations may need securing.' };
+  if (speedKmh < 50)    return { label: 'Strong breeze',   colour: '#fb923c', advice: 'Windy — outdoor decorations should be secured.' };
+  return                 { label: 'Gale',                   colour: '#f87171', advice: 'Very strong winds — outdoor events could be disrupted.' };
 }
 
 // Agreement across all available model medians for a day.
