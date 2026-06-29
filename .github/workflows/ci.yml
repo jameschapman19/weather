@@ -32,6 +32,3 @@ jobs:
           node-version: '20'
       - name: Test ensemble API model availability
         run: npm run test:api
-        # Mark as informational — API tests may fail if forecast horizon not yet reached.
-        # Remove continue-on-error once the IFS model key is confirmed.
-        continue-on-error: true

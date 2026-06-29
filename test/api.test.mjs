@@ -45,23 +45,24 @@ function inspectResponse(raw, modelKey) {
 
 // ── IFS model candidates ──────────────────────────────────────────────────────
 
-test('ecmwf_ifs04 — returns member columns and can be processed', async () => {
+test('ecmwf_ifs04 — is deterministic-only (no member columns)', async () => {
+  // Confirmed by CI: ecmwf_ifs04 returns only `time` + `temperature_2m`.
+  // It is NOT an ensemble key. The app uses ecmwf_ifs025 instead.
   const raw = await callApi('ecmwf_ifs04');
-  const { memberKeys } = inspectResponse(raw, 'ecmwf_ifs04');
-  assert.ok(memberKeys.length >= 1,
-    `Expected ≥1 member column, got 0. All keys: ${Object.keys(raw.hourly).join(', ')}`);
-  assert.ok(memberKeys.length >= 50, `Expected ≥50 members, got ${memberKeys.length}`);
-  const result = processRaw(raw);
-  assert.ok(result.stats.every(s => s.p50 !== null), 'Some p50 values are null');
+  inspectResponse(raw, 'ecmwf_ifs04');
+  const memberKeys = Object.keys(raw.hourly).filter(k => /^temperature_2m_member\d+$/.test(k));
+  assert.equal(memberKeys.length, 0, `ecmwf_ifs04 unexpectedly returned ${memberKeys.length} member columns — the app key list may need updating`);
 });
 
-test('ecmwf_ifs025 — returns member columns and can be processed', async () => {
+test('ecmwf_ifs025 — returns 50 ensemble members and can be processed', async () => {
   const raw = await callApi('ecmwf_ifs025');
   const { memberKeys } = inspectResponse(raw, 'ecmwf_ifs025');
   assert.ok(memberKeys.length >= 1,
     `Expected ≥1 member column. All keys: ${Object.keys(raw.hourly).join(', ')}`);
+  assert.equal(memberKeys.length, 50, `Expected 50 members, got ${memberKeys.length}`);
   const result = processRaw(raw);
   assert.ok(result.count >= 1);
+  assert.ok(result.stats.every(s => s.p50 !== null), 'Some p50 values are null');
 });
 
 // ── AIFS model ────────────────────────────────────────────────────────────────

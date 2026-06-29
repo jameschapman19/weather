@@ -14,8 +14,8 @@ export const WEDDING_DAYS = [
   { date: '2026-07-15', display: '15 July' },
 ];
 
-// Models tried in order; first success wins for IFS.
-export const IFS_MODEL_KEYS  = ['ecmwf_ifs04', 'ecmwf_ifs025'];
+// ecmwf_ifs04 is deterministic-only; ecmwf_ifs025 is the ensemble key (50 members).
+export const IFS_MODEL_KEYS  = ['ecmwf_ifs025'];
 export const AIFS_MODEL_KEYS = ['ecmwf_aifs025'];
 
 // ─── Stats ─────────────────────────────────────────────────────────────────────
