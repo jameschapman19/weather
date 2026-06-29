@@ -109,20 +109,18 @@ test('wedding dates coverage — which days are available per model', async () =
 // decide which models to add to the app. A "pass" means ensemble members
 // were returned; a "fail" usually means the key is deterministic-only.
 
+// Member counts confirmed by CI on 2026-06-29.
+// UKMO: ukmo_seamless is deterministic-only; ukmo_global/mogreps_g return HTTP 400 — not available.
 const PROBE_MODELS = [
-  { key: 'icon_eu',                     provider: 'DWD (Germany)',         expectedMembers: 40 },
-  { key: 'icon_seamless',               provider: 'DWD seamless',          expectedMembers: 40 },
-  { key: 'gfs025',                      provider: 'NOAA GFS 0.25°',        expectedMembers: 31 },
-  { key: 'gfs_seamless',               provider: 'NOAA GFS seamless',      expectedMembers: 31 },
-  { key: 'gem_global',                  provider: 'CMC (Canada)',           expectedMembers: 21 },
-  { key: 'meteofrance_seamless',        provider: 'Météo-France',           expectedMembers: null },
-  { key: 'meteofrance_arpege_world',   provider: 'MF ARPEGE World',        expectedMembers: null },
-  { key: 'bom_access_global_ensemble', provider: 'BOM (Australia)',         expectedMembers: 18 },
-  // UK Met Office candidates — checking which key the ensemble API accepts
-  { key: 'ukmo_global',                 provider: 'UKMO (candidate)',       expectedMembers: null },
-  { key: 'ukmo_seamless',              provider: 'UKMO seamless (cand.)',   expectedMembers: null },
-  { key: 'mogreps_g',                  provider: 'UKMO MOGREPS-G (cand.)', expectedMembers: null },
-  { key: 'uk_deterministic_10km',      provider: 'UKMO determ. (cand.)',   expectedMembers: null },
+  { key: 'icon_eu',                     provider: 'DWD (Germany)',      expectedMembers: 39 },
+  { key: 'icon_seamless',               provider: 'DWD seamless',       expectedMembers: 39 },
+  { key: 'gfs025',                      provider: 'NOAA GFS 0.25°',     expectedMembers: 30 },
+  { key: 'gfs_seamless',               provider: 'NOAA GFS seamless',   expectedMembers: 30 },
+  { key: 'gem_global',                  provider: 'CMC (Canada)',        expectedMembers: 20 },
+  { key: 'meteofrance_seamless',        provider: 'Météo-France',        expectedMembers: null },
+  { key: 'meteofrance_arpege_world',   provider: 'MF ARPEGE World',     expectedMembers: null },
+  { key: 'bom_access_global_ensemble', provider: 'BOM (Australia)',      expectedMembers: 17 },
+  { key: 'ukmo_seamless',              provider: 'UKMO (det. only)',     expectedMembers: null },
 ];
 
 test('additional provider probe — logs member counts for candidate models', async () => {
