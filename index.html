@@ -105,6 +105,26 @@
           </div>
         </div>
 
+        <!-- UKMO chart -->
+        <div class="chart-section" id="section-ukmo">
+          <div class="model-header">
+            <div class="model-title-group">
+              <h3>UK Met Office Global Ensemble</h3>
+              <p class="model-desc">MOGREPS-G &middot; 20 km &middot; <span id="ukmo-key-badge"></span></p>
+            </div>
+            <span class="model-badge ukmo-badge">UKMO</span>
+          </div>
+          <p class="model-unavailable hidden" id="unavail-ukmo"></p>
+          <div id="wrap-ukmo">
+            <p class="chart-sub-label">Temperature</p>
+            <div class="chart-wrap"><canvas id="chart-ukmo"></canvas></div>
+            <div class="hidden" id="wind-section-ukmo">
+              <p class="chart-sub-label">Wind Speed (10 m)</p>
+              <div class="chart-wrap"><canvas id="chart-wind-ukmo"></canvas></div>
+            </div>
+          </div>
+        </div>
+
         <!-- Temperature comparison chart -->
         <div class="chart-section">
           <div class="model-header">
@@ -159,6 +179,6 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-  <script type="module" src="app.js?v=4"></script>
+  <script type="module" src="app.js?v=5"></script>
 </body>
 </html>

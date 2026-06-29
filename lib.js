@@ -21,10 +21,12 @@ export const WEDDING_DAYS = [
 // Note: ecmwf_ifs04 is deterministic-only — do NOT add it here.
 // Note: meteofrance_seamless / meteofrance_arpege_world are deterministic-only.
 export const MODELS = [
-  { keys: ['ecmwf_ifs025'],  id: 'ifs',  name: 'ECMWF IFS',  shortName: 'IFS',  members: 50, r: 37,  g: 99,  b: 235, detail: true  },
-  { keys: ['ecmwf_aifs025'], id: 'aifs', name: 'ECMWF AIFS', shortName: 'AIFS', members: 50, r: 22,  g: 163, b: 74,  detail: true  },
-  { keys: ['icon_eu'],       id: 'icon', name: 'ICON EU',    shortName: 'ICON', members: 39, r: 234, g: 88,  b: 12,  detail: true  },
-  { keys: ['gfs025'],        id: 'gfs',  name: 'GFS',        shortName: 'GFS',  members: 30, r: 147, g: 51,  b: 234, detail: false },
+  { keys: ['ecmwf_ifs025_ensemble',  'ecmwf_ifs025'],  id: 'ifs',   name: 'ECMWF IFS',   shortName: 'IFS',  members: 50, r: 37,  g: 99,  b: 235, detail: true  },
+  { keys: ['ecmwf_aifs025_ensemble', 'ecmwf_aifs025'], id: 'aifs',  name: 'ECMWF AIFS',  shortName: 'AIFS', members: 50, r: 22,  g: 163, b: 74,  detail: true  },
+  { keys: ['icon_eu_eps',  'icon_eu'],                  id: 'icon',  name: 'ICON EU',     shortName: 'ICON', members: 39, r: 234, g: 88,  b: 12,  detail: true  },
+  { keys: ['ncep_gefs025', 'gfs025'],                   id: 'gfs',   name: 'GFS',         shortName: 'GFS',  members: 30, r: 147, g: 51,  b: 234, detail: false },
+  { keys: ['ukmo_global_ensemble_20km'],                id: 'ukmo',  name: 'UK Met Office',shortName: 'UKMO', members: 18, r: 20,  g: 184, b: 166, detail: true  },
+  { keys: ['ncep_aigefs025'],                           id: 'aigefs',name: 'AIGEFS',       shortName: 'AIGF', members: 30, r: 244, g: 63,  b: 94,  detail: false },
 ];
 
 // ─── Stats ─────────────────────────────────────────────────────────────────────

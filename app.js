@@ -1,7 +1,7 @@
 import {
   CONFIG, WEDDING_DAYS, MODELS,
   pct, processRaw, daytimeSummary, dayName, tempDesc, windDesc, multiModelAgreement,
-} from './lib.js?v=4';
+} from './lib.js?v=5';
 
 // ─── API ──────────────────────────────────────────────────────────────────────
 
