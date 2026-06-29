@@ -101,6 +101,40 @@ test('wedding dates coverage — which days are available per model', async () =
   assert.ok(true);
 });
 
+// ── Additional provider probes ────────────────────────────────────────────────
+// These tests are informational — they document what's available so we can
+// decide which models to add to the app. A "pass" means ensemble members
+// were returned; a "fail" usually means the key is deterministic-only.
+
+const PROBE_MODELS = [
+  { key: 'icon_eu',                     provider: 'DWD (Germany)',    expectedMembers: 40 },
+  { key: 'icon_seamless',               provider: 'DWD seamless',     expectedMembers: 40 },
+  { key: 'gfs025',                      provider: 'NOAA GFS 0.25°',   expectedMembers: 31 },
+  { key: 'gfs_seamless',               provider: 'NOAA GFS seamless', expectedMembers: 31 },
+  { key: 'gem_global',                  provider: 'CMC (Canada)',      expectedMembers: 21 },
+  { key: 'meteofrance_seamless',        provider: 'Météo-France',      expectedMembers: null },
+  { key: 'meteofrance_arpege_world',   provider: 'MF ARPEGE World',   expectedMembers: null },
+  { key: 'bom_access_global_ensemble', provider: 'BOM (Australia)',    expectedMembers: 18 },
+];
+
+test('additional provider probe — logs member counts for candidate models', async () => {
+  console.log('\n  Model availability probe:');
+  for (const { key, provider, expectedMembers } of PROBE_MODELS) {
+    let raw;
+    try { raw = await callApi(key); }
+    catch (e) { console.log(`  ✗ ${key.padEnd(30)} [${provider}]  HTTP error: ${e.message.slice(0,80)}`); continue; }
+
+    const { memberKeys } = inspectResponse(raw, key);
+    const status = memberKeys.length > 0 ? '✓ ensemble' : '✗ deterministic-only';
+    const memberNote = memberKeys.length > 0
+      ? `${memberKeys.length} members  (expected ${expectedMembers ?? '?'})`
+      : `keys: ${Object.keys(raw.hourly).filter(k => k !== 'time').join(', ')}`;
+    console.log(`  ${status}  ${key.padEnd(30)} [${provider}]  ${memberNote}`);
+  }
+  // Always pass — this is a discovery test, not a correctness check.
+  assert.ok(true, 'probe completed');
+});
+
 // ── Response structure sanity ─────────────────────────────────────────────────
 
 test('response has expected top-level keys', async () => {
