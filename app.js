@@ -1,7 +1,7 @@
 import {
   CONFIG, WEDDING_DAYS, MODELS,
   pct, processRaw, daytimeSummary, dayName, tempDesc, windDesc, multiModelAgreement,
-} from './lib.js';
+} from './lib.js?v=4';
 
 // ─── API ──────────────────────────────────────────────────────────────────────
 
@@ -27,7 +27,9 @@ async function fetchFirstWorking(model) {
   for (const key of model.keys) {
     try {
       const raw  = await fetchModel(key);
+      console.log(`[weather] ${key} hourly keys:`, Object.keys(raw.hourly).join(', '));
       const data = processRaw(raw);
+      console.log(`[weather] ${key} times[0]=${data.times[0]}, windStats=${data.windStats ? `${data.windStats.length} pts, first p50=${data.windStats[0]?.p50}` : 'null'}`);
       return { data, key };
     } catch (err) {
       console.warn(`[weather] ${key} failed: ${err.message}`);
