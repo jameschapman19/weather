@@ -152,6 +152,27 @@ test('response has expected top-level keys', async () => {
   assert.ok(Array.isArray(raw.hourly.time), 'hourly.time is not an array');
 });
 
+test('wind speed variable naming — logs available wind keys for debugging', async () => {
+  const u = new URL(BASE);
+  u.searchParams.set('latitude',   CONFIG.lat);
+  u.searchParams.set('longitude',  CONFIG.lon);
+  u.searchParams.set('hourly',     'temperature_2m,windspeed_10m,wind_speed_10m');
+  u.searchParams.set('models',     'ecmwf_aifs025');
+  u.searchParams.set('start_date', CONFIG.start);
+  u.searchParams.set('end_date',   CONFIG.start); // one day is enough
+  u.searchParams.set('timezone',   CONFIG.tz);
+  console.log(`  → GET ${u.toString()}`);
+  const res = await fetch(u.toString());
+  const text = await res.text();
+  if (!res.ok) { console.log(`  HTTP ${res.status}: ${text.slice(0, 200)}`); assert.ok(true); return; }
+  const raw = JSON.parse(text);
+  const allKeys = Object.keys(raw.hourly);
+  const windKeys = allKeys.filter(k => k.toLowerCase().includes('wind'));
+  console.log(`  All wind keys (${windKeys.length}): ${windKeys.slice(0, 10).join(', ')}`);
+  console.log(`  wind_?speed_10m_member keys: ${windKeys.filter(k => /^wind_?speed_10m_member/.test(k)).length}`);
+  assert.ok(true, 'diagnostic only — check logs for wind key names');
+});
+
 test('temperature values are plausible for summer France (5–50°C)', async () => {
   let raw;
   try { raw = await callApi('ecmwf_aifs025'); }

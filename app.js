@@ -9,7 +9,7 @@ async function fetchModel(key) {
   const u = new URL('https://ensemble-api.open-meteo.com/v1/ensemble');
   u.searchParams.set('latitude',   CONFIG.lat);
   u.searchParams.set('longitude',  CONFIG.lon);
-  u.searchParams.set('hourly',     'temperature_2m,wind_speed_10m');
+  u.searchParams.set('hourly',     'temperature_2m,windspeed_10m');
   u.searchParams.set('models',     key);
   u.searchParams.set('start_date', CONFIG.start);
   u.searchParams.set('end_date',   CONFIG.end);

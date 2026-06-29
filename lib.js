@@ -67,7 +67,7 @@ export function processRaw(raw) {
   const stats = times.map((_, i) => statsAt(tempMembers, i));
 
   const windKeys = Object.keys(hourly)
-    .filter(k => /^wind_speed_10m_member\d+$/.test(k))
+    .filter(k => /^wind_?speed_10m_member\d+$/.test(k))
     .sort();
   const windMembers = windKeys.map(k => hourly[k]);
   const windStats = windMembers.length
