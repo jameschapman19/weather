@@ -35,7 +35,7 @@
         <p class="section-sub">Daytime (07:00–22:00 local) &middot; based on ECMWF ensemble median &middot; hover charts below for hourly detail</p>
         <div class="glance-cards" id="glance-cards"></div>
         <div class="uncertainty-note">
-          The shaded range shows where 80% of ensemble members fall &mdash; wider means less certainty.
+          Shaded bands show the most likely 50% of ensemble outcomes &mdash; wider spread means more uncertainty.
           Forecasts improve significantly in the final 5&ndash;7 days.
         </div>
       </section>
@@ -43,97 +43,17 @@
       <!-- ── TECHNICAL SECTION ───────────────────────────────────── -->
       <section class="tech-section">
         <h2 class="section-title">Ensemble Analysis</h2>
-        <p class="section-sub">For the meteorologically curious &middot; 10&ndash;90th percentile fan, 25&ndash;75th interquartile band, and median</p>
-
-        <!-- IFS chart -->
-        <div class="chart-section" id="section-ifs">
-          <div class="model-header">
-            <div class="model-title-group">
-              <h3>ECMWF IFS Ensemble</h3>
-              <p class="model-desc">Integrated Forecasting System &middot; 50 members &middot; 0.25&deg; &middot; <span id="ifs-key-badge"></span></p>
-            </div>
-            <span class="model-badge ifs-badge">IFS</span>
-          </div>
-          <p class="model-unavailable hidden" id="unavail-ifs"></p>
-          <div id="wrap-ifs">
-            <p class="chart-sub-label">Temperature</p>
-            <div class="chart-wrap"><canvas id="chart-ifs"></canvas></div>
-            <div class="hidden" id="wind-section-ifs">
-              <p class="chart-sub-label">Wind Speed (10 m)</p>
-              <div class="chart-wrap"><canvas id="chart-wind-ifs"></canvas></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- AIFS chart -->
-        <div class="chart-section" id="section-aifs">
-          <div class="model-header">
-            <div class="model-title-group">
-              <h3>ECMWF AIFS Ensemble</h3>
-              <p class="model-desc">Artificial Intelligence Integrated Forecasting System &middot; 50 members &middot; 0.25&deg; &middot; <span id="aifs-key-badge"></span></p>
-            </div>
-            <span class="model-badge aifs-badge">AIFS</span>
-          </div>
-          <p class="model-unavailable hidden" id="unavail-aifs"></p>
-          <div id="wrap-aifs">
-            <p class="chart-sub-label">Temperature</p>
-            <div class="chart-wrap"><canvas id="chart-aifs"></canvas></div>
-            <div class="hidden" id="wind-section-aifs">
-              <p class="chart-sub-label">Wind Speed (10 m)</p>
-              <div class="chart-wrap"><canvas id="chart-wind-aifs"></canvas></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ICON EU chart -->
-        <div class="chart-section" id="section-icon">
-          <div class="model-header">
-            <div class="model-title-group">
-              <h3>DWD ICON Ensemble</h3>
-              <p class="model-desc">Icosahedral Nonhydrostatic model &middot; 39 members &middot; seamless / EU domain &middot; <span id="icon-key-badge"></span></p>
-            </div>
-            <span class="model-badge icon-badge">ICON</span>
-          </div>
-          <p class="model-unavailable hidden" id="unavail-icon"></p>
-          <div id="wrap-icon">
-            <p class="chart-sub-label">Temperature</p>
-            <div class="chart-wrap"><canvas id="chart-icon"></canvas></div>
-            <div class="hidden" id="wind-section-icon">
-              <p class="chart-sub-label">Wind Speed (10 m)</p>
-              <div class="chart-wrap"><canvas id="chart-wind-icon"></canvas></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- UKMO chart -->
-        <div class="chart-section" id="section-ukmo">
-          <div class="model-header">
-            <div class="model-title-group">
-              <h3>UK Met Office Global Ensemble</h3>
-              <p class="model-desc">MOGREPS-G &middot; 20 km &middot; <span id="ukmo-key-badge"></span></p>
-            </div>
-            <span class="model-badge ukmo-badge">UKMO</span>
-          </div>
-          <p class="model-unavailable hidden" id="unavail-ukmo"></p>
-          <div id="wrap-ukmo">
-            <p class="chart-sub-label">Temperature</p>
-            <div class="chart-wrap"><canvas id="chart-ukmo"></canvas></div>
-            <div class="hidden" id="wind-section-ukmo">
-              <p class="chart-sub-label">Wind Speed (10 m)</p>
-              <div class="chart-wrap"><canvas id="chart-wind-ukmo"></canvas></div>
-            </div>
-          </div>
-        </div>
+        <p class="section-sub">All models on a shared axis &middot; band = 25&ndash;75th percentile &middot; line = median &middot; hover for values</p>
 
         <!-- Temperature comparison chart -->
         <div class="chart-section">
           <div class="model-header">
             <div class="model-title-group">
-              <h3>Model Comparison &mdash; Temperature</h3>
-              <p class="model-desc">IFS &middot; AIFS &middot; ICON &middot; GEFS &middot; UKMO &middot; GEM &middot; AIGEFS &middot; BOM &mdash; median and interquartile range &middot; agreement reveals forecast confidence</p>
+              <h3>Temperature</h3>
+              <p class="model-desc">Wider spread between models = more uncertainty &middot; agreement = higher confidence</p>
             </div>
           </div>
-          <div class="chart-wrap">
+          <div class="chart-wrap chart-wrap-lg">
             <canvas id="chart-comparison"></canvas>
           </div>
         </div>
@@ -142,25 +62,18 @@
         <div class="chart-section">
           <div class="model-header">
             <div class="model-title-group">
-              <h3>Model Comparison &mdash; Wind Speed</h3>
-              <p class="model-desc">IFS &middot; AIFS &middot; ICON &middot; GEFS &middot; UKMO &middot; GEM &middot; AIGEFS &middot; BOM &mdash; ensemble median and interquartile range at 10 m</p>
+              <h3>Wind Speed at 10 m</h3>
+              <p class="model-desc">10 m above ground &middot; 1 km/h &asymp; 0.28 m/s &asymp; Beaufort 1 at 6 km/h</p>
             </div>
           </div>
-          <div class="chart-wrap">
+          <div class="chart-wrap chart-wrap-lg">
             <canvas id="chart-wind-comparison"></canvas>
           </div>
         </div>
 
-        <!-- Legend -->
-        <div class="legend-box">
-          <h4>Reading the charts</h4>
-          <div class="legend-items">
-            <div class="legend-item"><span class="legend-swatch sw-outer"></span><span><strong>10–90th percentile</strong> — 80% of ensemble members lie within this range</span></div>
-            <div class="legend-item"><span class="legend-swatch sw-inner"></span><span><strong>25–75th percentile</strong> — the interquartile range; the most likely 50%</span></div>
-            <div class="legend-item"><span class="legend-swatch sw-median"></span><span><strong>Median</strong> — half the members are above, half below</span></div>
-          </div>
-          <p class="legend-note">Day boundaries are marked with darker vertical gridlines. Hover anywhere on a chart to see the full percentile breakdown at that hour.</p>
-        </div>
+        <p class="legend-compact">
+          <span class="lc-swatch"></span>25&ndash;75th percentile (IQR)&ensp;&middot;&ensp;<span class="lc-line"></span>Median&ensp;&middot;&ensp;Darker gridlines = day boundaries&ensp;&middot;&ensp;Hover for hourly breakdown
+        </p>
       </section>
 
     </div>
@@ -179,6 +92,6 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-  <script type="module" src="app.js?v=9"></script>
+  <script type="module" src="app.js?v=10"></script>
 </body>
 </html>

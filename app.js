@@ -1,7 +1,7 @@
 import {
   CONFIG, WEDDING_DAYS, MODELS,
   pct, processRaw, daytimeSummary, dayName, tempDesc, windDesc, multiModelAgreement,
-} from './lib.js?v=9';
+} from './lib.js?v=10';
 
 // ─── API ──────────────────────────────────────────────────────────────────────
 
@@ -193,62 +193,6 @@ function sharedScales(times, yLabel = 'Temperature (°C)', yTick = v => `${v}°C
   };
 }
 
-// ─── Plume chart ──────────────────────────────────────────────────────────────
-
-function plumeChart(canvasId, times, stats, r, g, b, {
-  yLabel = 'Temperature (°C)',
-  yTick  = v => `${v}°C`,
-  fmtVal = v => fmtT(v) + 'C',
-  yMin, yMax,
-} = {}) {
-  const ctx = document.getElementById(canvasId);
-  if (!ctx || !stats) return null;
-  const c = a => rgba(r, g, b, a);
-
-  const ds = [
-    { label:'_p10', data:stats.map(s=>s.p10), borderWidth:0, borderColor:'transparent', backgroundColor:'transparent', pointRadius:0, tension:0.35, fill:false },
-    { label:'10–90th percentile', data:stats.map(s=>s.p90), borderWidth:0, borderColor:'transparent', backgroundColor:c(0.17), pointRadius:0, tension:0.35, fill:0 },
-    { label:'_p25', data:stats.map(s=>s.p25), borderWidth:0, borderColor:'transparent', backgroundColor:'transparent', pointRadius:0, tension:0.35, fill:false },
-    { label:'25–75th percentile', data:stats.map(s=>s.p75), borderWidth:0, borderColor:'transparent', backgroundColor:c(0.36), pointRadius:0, tension:0.35, fill:2 },
-    { label:'Median', data:stats.map(s=>s.p50), borderColor:c(1), backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.35, fill:false },
-  ];
-
-  return new Chart(ctx, {
-    type: 'line',
-    data: { labels: times, datasets: ds },
-    options: {
-      responsive:true, maintainAspectRatio:false, animation:{duration:500},
-      interaction:{ mode:'index', intersect:false },
-      plugins: {
-        legend: {
-          labels: {
-            filter: item => !item.text.startsWith('_'),
-            font:{family:"'Jost',sans-serif",size:12}, color:'#6b5f58', padding:18, usePointStyle:true,
-            generateLabels: () => [
-              { text:'10–90th percentile', fillStyle:c(0.22), strokeStyle:'transparent', pointStyle:'rect', lineWidth:0 },
-              { text:'25–75th percentile', fillStyle:c(0.48), strokeStyle:'transparent', pointStyle:'rect', lineWidth:0 },
-              { text:'Median',             fillStyle:'transparent', strokeStyle:c(1), pointStyle:'line', lineWidth:2.5 },
-            ],
-          },
-        },
-        tooltip: {
-          backgroundColor:'rgba(255,255,255,0.97)', borderColor:c(0.3), borderWidth:1,
-          titleColor:'#2c2825', bodyColor:'#6b5f58', padding:13,
-          callbacks: {
-            title: tooltipDateFn(times),
-            label: () => null,
-            afterBody: items => {
-              const s = stats[items[0].dataIndex];
-              return [`Median: ${fmtVal(s.p50)}`, `50% range: ${fmtVal(s.p25)}–${fmtVal(s.p75)}`, `80% range: ${fmtVal(s.p10)}–${fmtVal(s.p90)}`];
-            },
-          },
-        },
-      },
-      scales: sharedScales(times, yLabel, yTick, yMin, yMax),
-    },
-  });
-}
-
 // ─── Multi-model comparison chart ────────────────────────────────────────────
 
 function comparisonChart(canvasId, results, statKey = 'stats', {
@@ -268,17 +212,16 @@ function comparisonChart(canvasId, results, statKey = 'stats', {
   const legendEntries = [];
 
   for (const { model, data } of available) {
-    const { r, g, b, name } = model;
+    const { r, g, b, shortName } = model;
     const base = ds.length;
     const series = data[statKey];
     ds.push(
       { label:`_${model.id}_p25`, data:series.map(s=>s.p25), borderWidth:0, borderColor:'transparent', backgroundColor:'transparent', pointRadius:0, tension:0.35, fill:false },
-      { label:`${name} 25–75th`, data:series.map(s=>s.p75), borderWidth:0, borderColor:'transparent', backgroundColor:rgba(r,g,b,0.18), pointRadius:0, tension:0.35, fill:base },
-      { label:`${name} Median`,  data:series.map(s=>s.p50), borderColor:rgba(r,g,b,1), backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.35, fill:false },
+      { label:`_${model.id}_p75`, data:series.map(s=>s.p75), borderWidth:0, borderColor:'transparent', backgroundColor:rgba(r,g,b,0.18), pointRadius:0, tension:0.35, fill:base },
+      { label: shortName, data:series.map(s=>s.p50), borderColor:rgba(r,g,b,1), backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.35, fill:false },
     );
     legendEntries.push(
-      { text:`${name} 25–75th`, fillStyle:rgba(r,g,b,0.28), strokeStyle:'transparent', pointStyle:'rect', lineWidth:0 },
-      { text:`${name} Median`,  fillStyle:'transparent', strokeStyle:rgba(r,g,b,1), pointStyle:'line', lineWidth:2.5 },
+      { text: shortName, fillStyle: rgba(r,g,b,0.28), strokeStyle: rgba(r,g,b,1), pointStyle:'rectRounded', lineWidth:1.5 },
     );
   }
 
@@ -289,7 +232,7 @@ function comparisonChart(canvasId, results, statKey = 'stats', {
       responsive:true, maintainAspectRatio:false, animation:{duration:500},
       interaction:{ mode:'index', intersect:false },
       plugins:{
-        legend:{ labels:{ filter:i=>!i.text.startsWith('_'), font:{family:"'Jost',sans-serif",size:12}, color:'#6b5f58', padding:18, usePointStyle:true, generateLabels:()=>legendEntries } },
+        legend:{ labels:{ font:{family:"'Jost',sans-serif",size:12}, color:'#6b5f58', padding:14, usePointStyle:true, boxWidth:14, boxHeight:10, generateLabels:()=>legendEntries } },
         tooltip:{
           backgroundColor:'rgba(255,255,255,0.97)', borderColor:'rgba(0,0,0,0.1)', borderWidth:1,
           titleColor:'#2c2825', bodyColor:'#6b5f58', padding:13,
@@ -358,26 +301,6 @@ async function main() {
 
     // Glance section
     renderGlance(results);
-
-    // Individual plume charts for models with detail:true
-    for (const { model, data, key, error } of results) {
-      if (!model.detail) continue;
-      const unavail = document.getElementById(`unavail-${model.id}`);
-      const wrap    = document.getElementById(`wrap-${model.id}`);
-      if (!data) {
-        if (unavail) { unavail.textContent = `Could not load ${model.name} (${model.keys.join('/')}) — ${error?.message ?? 'unknown'}`; unavail.classList.remove('hidden'); }
-        wrap?.classList.add('hidden');
-        continue;
-      }
-      document.getElementById(`${model.id}-key-badge`)?.replaceChildren(
-        Object.assign(document.createElement('code'), { textContent: key })
-      );
-      plumeChart(`chart-${model.id}`, data.times, data.stats, model.r, model.g, model.b, tempBounds);
-      if (data.windStats) {
-        plumeChart(`chart-wind-${model.id}`, data.times, data.windStats, model.r, model.g, model.b, { ...WIND_YAXIS, ...windBounds });
-        document.getElementById(`wind-section-${model.id}`)?.classList.remove('hidden');
-      }
-    }
 
     // Comparison charts (temperature + wind)
     comparisonChart('chart-comparison', results, 'stats', tempBounds);

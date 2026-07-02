@@ -24,14 +24,14 @@ export const WEDDING_DAYS = [
 //   icon_seamless_eps → ~8d, icon_eu_eps → ~5d, ukmo/aigefs/gefs025 → ~10d.
 //   Shorter-range models will gain wedding-date coverage as we approach July 13.
 export const MODELS = [
-  { keys: ['ecmwf_ifs025_ensemble',  'ecmwf_ifs025'],                  id: 'ifs',   name: 'ECMWF IFS',    shortName: 'IFS',  members: 50, r: 37,  g: 99,  b: 235, detail: true  },
-  { keys: ['ecmwf_aifs025_ensemble', 'ecmwf_aifs025'],                 id: 'aifs',  name: 'ECMWF AIFS',   shortName: 'AIFS', members: 50, r: 22,  g: 163, b: 74,  detail: true  },
-  { keys: ['icon_seamless_eps', 'icon_eu_eps', 'icon_eu'],             id: 'icon',  name: 'DWD ICON',      shortName: 'ICON', members: 39, r: 234, g: 88,  b: 12,  detail: true  },
-  { keys: ['ncep_gefs_seamless', 'ncep_gefs025', 'gfs025'],            id: 'gfs',   name: 'NOAA GEFS',     shortName: 'GEFS', members: 30, r: 147, g: 51,  b: 234, detail: false },
-  { keys: ['ukmo_global_ensemble_20km'],                                id: 'ukmo',  name: 'UK Met Office', shortName: 'UKMO', members: 17, r: 20,  g: 184, b: 166, detail: true  },
-  { keys: ['gem_global_ensemble'],                                      id: 'gem',   name: 'CMC GEM',       shortName: 'GEM',  members: 20, r: 245, g: 158, b: 11,  detail: false },
-  { keys: ['ncep_aigefs025'],                                           id: 'aigefs',name: 'NCEP AIGEFS',   shortName: 'AIGF', members: 30, r: 244, g: 63,  b: 94,  detail: false },
-  { keys: ['bom_access_global_ensemble'],                               id: 'bom',   name: 'BOM ACCESS-GE', shortName: 'BOM',  members: 17, r: 14,  g: 165, b: 233, detail: false },
+  { keys: ['ecmwf_ifs025_ensemble',  'ecmwf_ifs025'],              id: 'ifs',   name: 'ECMWF IFS',    shortName: 'IFS',  members: 50, r: 37,  g: 99,  b: 235 },
+  { keys: ['ecmwf_aifs025_ensemble', 'ecmwf_aifs025'],             id: 'aifs',  name: 'ECMWF AIFS',   shortName: 'AIFS', members: 50, r: 22,  g: 163, b: 74  },
+  { keys: ['icon_seamless_eps', 'icon_eu_eps', 'icon_eu'],         id: 'icon',  name: 'DWD ICON',     shortName: 'ICON', members: 39, r: 234, g: 88,  b: 12  },
+  { keys: ['ncep_gefs_seamless', 'ncep_gefs025', 'gfs025'],        id: 'gfs',   name: 'NOAA GEFS',    shortName: 'GEFS', members: 30, r: 147, g: 51,  b: 234 },
+  { keys: ['ukmo_global_ensemble_20km'],                            id: 'ukmo',  name: 'UK Met Office',shortName: 'UKMO', members: 17, r: 20,  g: 184, b: 166 },
+  { keys: ['gem_global_ensemble'],                                  id: 'gem',   name: 'CMC GEM',      shortName: 'GEM',  members: 20, r: 245, g: 158, b: 11  },
+  { keys: ['ncep_aigefs025'],                                       id: 'aigefs',name: 'NCEP AIGEFS',  shortName: 'AIGF', members: 30, r: 244, g: 63,  b: 94  },
+  { keys: ['bom_access_global_ensemble'],                           id: 'bom',   name: 'BOM ACCESS-GE',shortName: 'BOM',  members: 17, r: 14,  g: 165, b: 233 },
 ];
 
 // ─── Stats ─────────────────────────────────────────────────────────────────────
