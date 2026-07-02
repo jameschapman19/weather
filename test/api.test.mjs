@@ -109,19 +109,24 @@ test('wedding dates coverage — which days are available per model', async () =
 // decide which models to add to the app. A "pass" means ensemble members
 // were returned; a "fail" usually means the key is deterministic-only.
 
-// Member counts confirmed by CI. Correct key names sourced from Open-Meteo docs URL 2026-06-29.
+// Member counts confirmed by CSV download 2026-07-02 (Berlin 52.50N 13.38E).
+// Range notes: gefs_seamless/gem/gefs05 → 31d; ifs025/aifs025 → ~15d;
+//   icon_seamless → ~8d; icon_eu/ukmo/gefs025/aigefs → ~10d; icon_d2 → ~3d.
 const PROBE_MODELS = [
-  { key: 'icon_eu_eps',                      provider: 'DWD ICON EU EPS',        expectedMembers: 39 },
-  { key: 'icon_seamless_eps',                provider: 'DWD ICON seamless EPS',   expectedMembers: 39 },
-  { key: 'ncep_gefs025',                     provider: 'NOAA GFS/GEFS 0.25°',    expectedMembers: 30 },
-  { key: 'ncep_gefs_seamless',              provider: 'NOAA GEFS seamless',      expectedMembers: 30 },
-  { key: 'gem_global_ensemble',              provider: 'CMC GEM Global',          expectedMembers: 20 },
-  { key: 'bom_access_global_ensemble',      provider: 'BOM ACCESS Global',       expectedMembers: 17 },
-  { key: 'ukmo_global_ensemble_20km',        provider: 'UKMO Global 20km',        expectedMembers: null },
-  { key: 'ukmo_uk_ensemble_2km',            provider: 'UKMO UK 2km',             expectedMembers: null },
-  { key: 'meteoswiss_icon_ch1_ensemble',    provider: 'MeteoSwiss CH1 1km',      expectedMembers: null },
-  { key: 'meteoswiss_icon_ch2_ensemble',    provider: 'MeteoSwiss CH2 2km',      expectedMembers: null },
-  { key: 'ncep_aigefs025',                   provider: 'NCEP AIGEFS 0.25°',       expectedMembers: null },
+  { key: 'icon_seamless_eps',              provider: 'DWD ICON seamless EPS',   expectedMembers: 39 },
+  { key: 'icon_eu_eps',                    provider: 'DWD ICON EU EPS',         expectedMembers: 39 },
+  { key: 'icon_global_eps',                provider: 'DWD ICON Global EPS',     expectedMembers: 39 },
+  { key: 'icon_d2_eps',                    provider: 'DWD ICON-D2 EPS',         expectedMembers: 19 },
+  { key: 'ncep_gefs_seamless',             provider: 'NOAA GEFS seamless',      expectedMembers: 30 },
+  { key: 'ncep_gefs025',                   provider: 'NOAA GEFS 0.25°',         expectedMembers: 30 },
+  { key: 'ncep_gefs05',                    provider: 'NOAA GEFS 0.5°',          expectedMembers: 30 },
+  { key: 'ncep_aigefs025',                 provider: 'NCEP AIGEFS 0.25°',       expectedMembers: 30 },
+  { key: 'gem_global_ensemble',            provider: 'CMC GEM Global',          expectedMembers: 20 },
+  { key: 'bom_access_global_ensemble',     provider: 'BOM ACCESS Global',       expectedMembers: 17 },
+  { key: 'ukmo_global_ensemble_20km',      provider: 'UKMO Global 20km',        expectedMembers: 17 },
+  { key: 'ukmo_uk_ensemble_2km',           provider: 'UKMO UK 2km',             expectedMembers: null },
+  { key: 'meteoswiss_icon_ch1_ensemble',   provider: 'MeteoSwiss CH1 1km',      expectedMembers: null },
+  { key: 'meteoswiss_icon_ch2_ensemble',   provider: 'MeteoSwiss CH2 2km',      expectedMembers: null },
 ];
 
 test('additional provider probe — logs member counts for candidate models', async () => {

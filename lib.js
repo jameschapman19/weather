@@ -16,17 +16,22 @@ export const WEDDING_DAYS = [
 
 // All ensemble models. `keys` are tried in order; first success wins.
 // `detail: true` → gets its own plume chart. All models appear in comparison.
-// Member counts confirmed by CI probe on 2026-06-29.
+// Member counts confirmed by CI probe on 2026-06-29 / CSV on 2026-07-02.
 // Note: ecmwf_ifs025 output is 3-hourly so some timesteps will have null stats.
 // Note: ecmwf_ifs04 is deterministic-only — do NOT add it here.
 // Note: meteofrance_seamless / meteofrance_arpege_world are deterministic-only.
+// Range notes (as of 2026-07-02): ifs025/aifs025 → ~15d, gefs_seamless/gem/gefs05 → 31d,
+//   icon_seamless_eps → ~8d, icon_eu_eps → ~5d, ukmo/aigefs/gefs025 → ~10d.
+//   Shorter-range models will gain wedding-date coverage as we approach July 13.
 export const MODELS = [
-  { keys: ['ecmwf_ifs025_ensemble',  'ecmwf_ifs025'],  id: 'ifs',   name: 'ECMWF IFS',   shortName: 'IFS',  members: 50, r: 37,  g: 99,  b: 235, detail: true  },
-  { keys: ['ecmwf_aifs025_ensemble', 'ecmwf_aifs025'], id: 'aifs',  name: 'ECMWF AIFS',  shortName: 'AIFS', members: 50, r: 22,  g: 163, b: 74,  detail: true  },
-  { keys: ['icon_eu_eps',  'icon_eu'],                  id: 'icon',  name: 'ICON EU',     shortName: 'ICON', members: 39, r: 234, g: 88,  b: 12,  detail: true  },
-  { keys: ['ncep_gefs025', 'gfs025'],                   id: 'gfs',   name: 'GFS',         shortName: 'GFS',  members: 30, r: 147, g: 51,  b: 234, detail: false },
-  { keys: ['ukmo_global_ensemble_20km'],                id: 'ukmo',  name: 'UK Met Office',shortName: 'UKMO', members: 18, r: 20,  g: 184, b: 166, detail: true  },
-  { keys: ['ncep_aigefs025'],                           id: 'aigefs',name: 'AIGEFS',       shortName: 'AIGF', members: 30, r: 244, g: 63,  b: 94,  detail: false },
+  { keys: ['ecmwf_ifs025_ensemble',  'ecmwf_ifs025'],                  id: 'ifs',   name: 'ECMWF IFS',    shortName: 'IFS',  members: 50, r: 37,  g: 99,  b: 235, detail: true  },
+  { keys: ['ecmwf_aifs025_ensemble', 'ecmwf_aifs025'],                 id: 'aifs',  name: 'ECMWF AIFS',   shortName: 'AIFS', members: 50, r: 22,  g: 163, b: 74,  detail: true  },
+  { keys: ['icon_seamless_eps', 'icon_eu_eps', 'icon_eu'],             id: 'icon',  name: 'DWD ICON',      shortName: 'ICON', members: 39, r: 234, g: 88,  b: 12,  detail: true  },
+  { keys: ['ncep_gefs_seamless', 'ncep_gefs025', 'gfs025'],            id: 'gfs',   name: 'NOAA GEFS',     shortName: 'GEFS', members: 30, r: 147, g: 51,  b: 234, detail: false },
+  { keys: ['ukmo_global_ensemble_20km'],                                id: 'ukmo',  name: 'UK Met Office', shortName: 'UKMO', members: 17, r: 20,  g: 184, b: 166, detail: true  },
+  { keys: ['gem_global_ensemble'],                                      id: 'gem',   name: 'CMC GEM',       shortName: 'GEM',  members: 20, r: 245, g: 158, b: 11,  detail: false },
+  { keys: ['ncep_aigefs025'],                                           id: 'aigefs',name: 'NCEP AIGEFS',   shortName: 'AIGF', members: 30, r: 244, g: 63,  b: 94,  detail: false },
+  { keys: ['bom_access_global_ensemble'],                               id: 'bom',   name: 'BOM ACCESS-GE', shortName: 'BOM',  members: 17, r: 14,  g: 165, b: 233, detail: false },
 ];
 
 // ─── Stats ─────────────────────────────────────────────────────────────────────
