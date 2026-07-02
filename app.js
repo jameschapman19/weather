@@ -1,7 +1,7 @@
 import {
   CONFIG, WEDDING_DAYS, MODELS,
   pct, processRaw, daytimeSummary, dayName, tempDesc, windDesc, multiModelAgreement,
-} from './lib.js?v=8';
+} from './lib.js?v=9';
 
 // ─── API ──────────────────────────────────────────────────────────────────────
 
@@ -175,7 +175,7 @@ function gridColorFn(times) {
     ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.04)';
 }
 
-function sharedScales(times, yLabel = 'Temperature (°C)', yTick = v => `${v}°C`) {
+function sharedScales(times, yLabel = 'Temperature (°C)', yTick = v => `${v}°C`, yMin, yMax) {
   return {
     x: {
       ticks: { maxRotation:0, font:{family:"'Jost',sans-serif",size:11}, color:'#6b5f58', callback:xTickFn(times), maxTicksLimit:48 },
@@ -183,6 +183,8 @@ function sharedScales(times, yLabel = 'Temperature (°C)', yTick = v => `${v}°C
       border: { color: 'rgba(0,0,0,0.1)' },
     },
     y: {
+      ...(yMin != null && { min: yMin }),
+      ...(yMax != null && { max: yMax }),
       title: { display:true, text:yLabel, font:{family:"'Jost',sans-serif",size:11}, color:'#6b5f58' },
       ticks: { font:{family:"'Jost',sans-serif",size:11}, color:'#6b5f58', callback:yTick },
       grid:   { color: 'rgba(0,0,0,0.04)' },
@@ -197,6 +199,7 @@ function plumeChart(canvasId, times, stats, r, g, b, {
   yLabel = 'Temperature (°C)',
   yTick  = v => `${v}°C`,
   fmtVal = v => fmtT(v) + 'C',
+  yMin, yMax,
 } = {}) {
   const ctx = document.getElementById(canvasId);
   if (!ctx || !stats) return null;
@@ -241,7 +244,7 @@ function plumeChart(canvasId, times, stats, r, g, b, {
           },
         },
       },
-      scales: sharedScales(times, yLabel, yTick),
+      scales: sharedScales(times, yLabel, yTick, yMin, yMax),
     },
   });
 }
@@ -252,6 +255,7 @@ function comparisonChart(canvasId, results, statKey = 'stats', {
   yLabel = 'Temperature (°C)',
   yTick  = v => `${v}°C`,
   fmtVal = v => fmtT(v) + 'C',
+  yMin, yMax,
 } = {}) {
   const ctx = document.getElementById(canvasId);
   if (!ctx) return null;
@@ -302,7 +306,7 @@ function comparisonChart(canvasId, results, statKey = 'stats', {
           },
         },
       },
-      scales: sharedScales(times, yLabel, yTick),
+      scales: sharedScales(times, yLabel, yTick, yMin, yMax),
     },
   });
 }
@@ -335,6 +339,23 @@ async function main() {
       throw new Error(results.map(r => r.error?.message).filter(Boolean).join(' | '));
     }
 
+    // Shared y-axis bounds across all models so charts are directly comparable
+    const globalBounds = (statKey, forceMinZero = false) => {
+      let lo = Infinity, hi = -Infinity;
+      for (const { data } of results) {
+        if (!data?.[statKey]) continue;
+        for (const s of data[statKey]) {
+          if (Number.isFinite(s.p10) && s.p10 < lo) lo = s.p10;
+          if (Number.isFinite(s.p90) && s.p90 > hi) hi = s.p90;
+        }
+      }
+      if (!isFinite(lo) || !isFinite(hi)) return {};
+      const pad = Math.max((hi - lo) * 0.06, 1);
+      return { yMin: forceMinZero ? 0 : Math.floor(lo - pad), yMax: Math.ceil(hi + pad) };
+    };
+    const tempBounds = globalBounds('stats');
+    const windBounds = globalBounds('windStats', true);
+
     // Glance section
     renderGlance(results);
 
@@ -351,16 +372,16 @@ async function main() {
       document.getElementById(`${model.id}-key-badge`)?.replaceChildren(
         Object.assign(document.createElement('code'), { textContent: key })
       );
-      plumeChart(`chart-${model.id}`, data.times, data.stats, model.r, model.g, model.b);
+      plumeChart(`chart-${model.id}`, data.times, data.stats, model.r, model.g, model.b, tempBounds);
       if (data.windStats) {
-        plumeChart(`chart-wind-${model.id}`, data.times, data.windStats, model.r, model.g, model.b, WIND_YAXIS);
+        plumeChart(`chart-wind-${model.id}`, data.times, data.windStats, model.r, model.g, model.b, { ...WIND_YAXIS, ...windBounds });
         document.getElementById(`wind-section-${model.id}`)?.classList.remove('hidden');
       }
     }
 
     // Comparison charts (temperature + wind)
-    comparisonChart('chart-comparison', results, 'stats');
-    comparisonChart('chart-wind-comparison', results, 'windStats', WIND_YAXIS);
+    comparisonChart('chart-comparison', results, 'stats', tempBounds);
+    comparisonChart('chart-wind-comparison', results, 'windStats', { ...WIND_YAXIS, ...windBounds });
 
     document.getElementById('last-updated').textContent =
       `Loaded ${new Date().toLocaleString('en-GB', { dateStyle:'medium', timeStyle:'short' })}`;
