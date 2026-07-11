@@ -3,8 +3,8 @@
 export const CONFIG = {
   lat:   44.275,
   lon:   4.527,
-  start: '2026-07-05',
-  end:   '2026-07-15',
+  start: '2026-07-12',
+  end:   '2026-07-16',
   tz:    'Europe/Paris',
 };
 
