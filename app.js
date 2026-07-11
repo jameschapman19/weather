@@ -1,7 +1,7 @@
 import {
-  CONFIG, WEDDING_DAYS, MODELS,
-  pct, processRaw, daytimeSummary, dayName, tempDesc, windDesc, multiModelAgreement,
-} from './lib.js?v=10';
+  CONFIG, WEDDING_DAYS, MODELS, OP_MODELS,
+  pct, processRaw, processRawOp, daytimeSummary, dayName, tempDesc, windDesc, multiModelAgreement,
+} from './lib.js?v=11';
 
 // ─── API ──────────────────────────────────────────────────────────────────────
 
@@ -20,6 +20,24 @@ async function fetchModel(key) {
     throw new Error(`HTTP ${r.status} for "${key}"${body ? ' — ' + body.slice(0, 200) : ''}`);
   }
   return r.json();
+}
+
+async function fetchOpModel(model) {
+  const u = new URL('https://api.open-meteo.com/v1/forecast');
+  u.searchParams.set('latitude',   CONFIG.lat);
+  u.searchParams.set('longitude',  CONFIG.lon);
+  u.searchParams.set('hourly',     'temperature_2m,windspeed_10m');
+  u.searchParams.set('models',     model.key);
+  u.searchParams.set('start_date', CONFIG.start);
+  u.searchParams.set('end_date',   CONFIG.end);
+  u.searchParams.set('timezone',   CONFIG.tz);
+  const r = await fetch(u.toString());
+  if (!r.ok) {
+    const body = await r.text().catch(() => '');
+    throw new Error(`HTTP ${r.status} for op "${model.key}"${body ? ' — ' + body.slice(0, 200) : ''}`);
+  }
+  const raw = await r.json();
+  return { model, data: processRawOp(raw) };
 }
 
 async function fetchFirstWorking(model) {
@@ -254,6 +272,67 @@ function comparisonChart(canvasId, results, statKey = 'stats', {
   });
 }
 
+// ─── Operational (deterministic) line chart ───────────────────────────────────
+
+function opLineChart(canvasId, opResults, {
+  yLabel  = 'Temperature (°C)',
+  yTick   = v => `${v}°C`,
+  fmtVal  = v => fmtT(v) + 'C',
+  dataKey = 'temps',
+  yMin, yMax,
+} = {}) {
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return null;
+
+  const available = opResults.filter(r => r.data?.[dataKey]?.length);
+  if (!available.length) return null;
+  const times = available[0].data.times;
+
+  const legendEntries = [];
+  const ds = available.map(({ model, data }) => {
+    const { r, g, b, shortName } = model;
+    legendEntries.push({ text: shortName, fillStyle: 'transparent', strokeStyle: rgba(r,g,b,1), pointStyle:'line', lineWidth:2 });
+    return {
+      label: shortName,
+      data:  data[dataKey],
+      borderColor: rgba(r,g,b,1),
+      backgroundColor: 'transparent',
+      borderWidth: 2.5,
+      pointRadius: 0,
+      tension: 0.35,
+      fill: false,
+    };
+  });
+
+  return new Chart(ctx, {
+    type: 'line',
+    data: { labels: times, datasets: ds },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 500 },
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { labels: { font:{family:"'Jost',sans-serif",size:12}, color:'#6b5f58', padding:14, usePointStyle:true, boxWidth:14, boxHeight:10, generateLabels:()=>legendEntries } },
+        tooltip: {
+          backgroundColor:'rgba(255,255,255,0.97)', borderColor:'rgba(0,0,0,0.1)', borderWidth:1,
+          titleColor:'#2c2825', bodyColor:'#6b5f58', padding:13,
+          callbacks: {
+            title: tooltipDateFn(times),
+            label: ()=>null,
+            afterBody: items => {
+              const i = items[0].dataIndex;
+              return available.map(({ model, data }) => {
+                const v = data[dataKey][i];
+                return `${model.shortName.padEnd(6)}: ${Number.isFinite(v) ? fmtVal(v) : '–'}`;
+              });
+            },
+          },
+        },
+      },
+      scales: sharedScales(times, yLabel, yTick, yMin, yMax),
+    },
+  });
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 const WIND_YAXIS = {
@@ -269,7 +348,10 @@ async function main() {
   const $errMsg = document.getElementById('error-msg');
 
   try {
-    const settled = await Promise.allSettled(MODELS.map(fetchFirstWorking));
+    const [settled, opSettled] = await Promise.all([
+      Promise.allSettled(MODELS.map(fetchFirstWorking)),
+      Promise.allSettled(OP_MODELS.map(fetchOpModel)),
+    ]);
 
     const results = MODELS.map((model, i) => ({
       model,
@@ -278,11 +360,17 @@ async function main() {
       error: settled[i].status === 'rejected'  ? settled[i].reason      : null,
     }));
 
-    if (results.every(r => !r.data)) {
+    const opResults = OP_MODELS.map((model, i) => ({
+      model,
+      data:  opSettled[i].status === 'fulfilled' ? opSettled[i].value.data : null,
+      error: opSettled[i].status === 'rejected'  ? opSettled[i].reason     : null,
+    }));
+
+    if (results.every(r => !r.data) && opResults.every(r => !r.data)) {
       throw new Error(results.map(r => r.error?.message).filter(Boolean).join(' | '));
     }
 
-    // Shared y-axis bounds across all models so charts are directly comparable
+    // Shared y-axis bounds across all ensemble models so charts are directly comparable
     const globalBounds = (statKey, forceMinZero = false) => {
       let lo = Infinity, hi = -Infinity;
       for (const { data } of results) {
@@ -302,9 +390,36 @@ async function main() {
     // Glance section
     renderGlance(results);
 
-    // Comparison charts (temperature + wind)
+    // Comparison charts (temperature + wind) — ensemble
     comparisonChart('chart-comparison', results, 'stats', tempBounds);
     comparisonChart('chart-wind-comparison', results, 'windStats', { ...WIND_YAXIS, ...windBounds });
+
+    // Operational (deterministic) line charts — include ensemble bounds for comparability
+    const opTempBounds = (() => {
+      let lo = Infinity, hi = -Infinity;
+      for (const { data } of opResults) {
+        if (!data?.temps?.length) continue;
+        for (const v of data.temps) { if (Number.isFinite(v)) { if (v < lo) lo = v; if (v > hi) hi = v; } }
+      }
+      if (Number.isFinite(tempBounds.yMin) && tempBounds.yMin < lo) lo = tempBounds.yMin;
+      if (Number.isFinite(tempBounds.yMax) && tempBounds.yMax > hi) hi = tempBounds.yMax;
+      if (!isFinite(lo)) return tempBounds;
+      const pad = Math.max((hi - lo) * 0.06, 1);
+      return { yMin: Math.floor(lo - pad), yMax: Math.ceil(hi + pad) };
+    })();
+    const opWindBounds = (() => {
+      let hi = -Infinity;
+      for (const { data } of opResults) {
+        if (!data?.winds?.length) continue;
+        for (const v of data.winds) { if (Number.isFinite(v) && v > hi) hi = v; }
+      }
+      if (Number.isFinite(windBounds.yMax) && windBounds.yMax > hi) hi = windBounds.yMax;
+      if (!isFinite(hi)) return windBounds;
+      const pad = Math.max(hi * 0.06, 1);
+      return { yMin: 0, yMax: Math.ceil(hi + pad) };
+    })();
+    opLineChart('chart-op-temp', opResults, { ...opTempBounds });
+    opLineChart('chart-op-wind', opResults, { ...WIND_YAXIS, dataKey: 'winds', ...opWindBounds });
 
     document.getElementById('last-updated').textContent =
       `Loaded ${new Date().toLocaleString('en-GB', { dateStyle:'medium', timeStyle:'short' })}`;

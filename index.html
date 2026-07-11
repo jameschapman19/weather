@@ -24,7 +24,7 @@
   <main>
     <div id="status" class="status">
       <div class="spinner"></div>
-      <p>Fetching ensemble forecasts&hellip;</p>
+      <p>Fetching forecasts&hellip;</p>
     </div>
 
     <div id="app" class="app hidden">
@@ -32,7 +32,7 @@
       <!-- ── FRIENDLY SECTION ─────────────────────────────────────── -->
       <section class="glance-section">
         <h2 class="section-title">What to expect</h2>
-        <p class="section-sub">Daytime (07:00–22:00 local) &middot; based on ECMWF ensemble median &middot; hover charts below for hourly detail</p>
+        <p class="section-sub">Daytime (07:00–22:00 local) &middot; based on ensemble median across models &middot; hover charts below for hourly detail</p>
         <div class="glance-cards" id="glance-cards"></div>
         <div class="uncertainty-note">
           Shaded bands show the most likely 50% of ensemble outcomes &mdash; wider spread means more uncertainty.
@@ -40,7 +40,7 @@
         </div>
       </section>
 
-      <!-- ── TECHNICAL SECTION ───────────────────────────────────── -->
+      <!-- ── ENSEMBLE SECTION ───────────────────────────────────── -->
       <section class="tech-section">
         <h2 class="section-title">Ensemble Analysis</h2>
         <p class="section-sub">All models on a shared axis &middot; band = 25&ndash;75th percentile &middot; line = median &middot; hover for values</p>
@@ -76,6 +76,40 @@
         </p>
       </section>
 
+      <!-- ── OPERATIONAL SECTION ────────────────────────────────── -->
+      <section class="tech-section">
+        <h2 class="section-title">Operational (Deterministic) Forecasts</h2>
+        <p class="section-sub">Single best-guess run from each centre &middot; no ensemble spread &middot; higher resolution than ensemble models</p>
+
+        <div class="chart-section">
+          <div class="model-header">
+            <div class="model-title-group">
+              <h3>Temperature</h3>
+              <p class="model-desc">ECMWF IFS &middot; DWD ICON &middot; CMC GEM &middot; M&eacute;t&eacute;o-France &middot; MeteoSwiss</p>
+            </div>
+          </div>
+          <div class="chart-wrap chart-wrap-lg">
+            <canvas id="chart-op-temp"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-section">
+          <div class="model-header">
+            <div class="model-title-group">
+              <h3>Wind Speed at 10 m</h3>
+              <p class="model-desc">Deterministic wind &middot; 10 m above ground</p>
+            </div>
+          </div>
+          <div class="chart-wrap chart-wrap-lg">
+            <canvas id="chart-op-wind"></canvas>
+          </div>
+        </div>
+
+        <p class="legend-compact">
+          <span class="lc-line"></span>Single deterministic run per model&ensp;&middot;&ensp;Darker gridlines = day boundaries&ensp;&middot;&ensp;Hover for hourly values
+        </p>
+      </section>
+
     </div>
 
     <div id="error-state" class="error-state hidden">
@@ -87,11 +121,11 @@
   </main>
 
   <footer>
-    <p>Data from <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> &middot; ECMWF IFS &amp; AIFS &middot; DWD ICON &middot; NOAA GEFS &middot; UK Met Office &middot; CMC GEM &middot; BOM ACCESS-GE</p>
+    <p>Data from <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> &middot; ECMWF IFS &amp; AIFS &middot; DWD ICON &middot; NOAA GEFS &middot; UK Met Office &middot; CMC GEM &middot; M&eacute;t&eacute;o-France &middot; MeteoSwiss</p>
     <p class="last-updated" id="last-updated"></p>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-  <script type="module" src="app.js?v=10"></script>
+  <script type="module" src="app.js?v=11"></script>
 </body>
 </html>

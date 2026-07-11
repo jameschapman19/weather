@@ -30,8 +30,16 @@ export const MODELS = [
   { keys: ['ncep_gefs_seamless', 'ncep_gefs025', 'gfs025'],        id: 'gfs',   name: 'NOAA GEFS',    shortName: 'GEFS', members: 30, r: 147, g: 51,  b: 234 },
   { keys: ['ukmo_global_ensemble_20km'],                            id: 'ukmo',  name: 'UK Met Office',shortName: 'UKMO', members: 17, r: 20,  g: 184, b: 166 },
   { keys: ['gem_global_ensemble'],                                  id: 'gem',   name: 'CMC GEM',      shortName: 'GEM',  members: 20, r: 245, g: 158, b: 11  },
-  { keys: ['ncep_aigefs025'],                                       id: 'aigefs',name: 'NCEP AIGEFS',  shortName: 'AIGF', members: 30, r: 244, g: 63,  b: 94  },
-  { keys: ['bom_access_global_ensemble'],                           id: 'bom',   name: 'BOM ACCESS-GE',shortName: 'BOM',  members: 17, r: 14,  g: 165, b: 233 },
+  // AIGEFS (experimental AI model, short range ~9d) and BOM (no data for this region) excluded.
+];
+
+// Deterministic (operational) models from the regular forecast API.
+export const OP_MODELS = [
+  { key: 'ecmwf_ifs',               name: 'ECMWF IFS',    shortName: 'IFS',    r: 37,  g: 99,  b: 235 },
+  { key: 'dwd_icon_seamless',        name: 'DWD ICON',     shortName: 'ICON',   r: 234, g: 88,  b: 12  },
+  { key: 'cmc_gem_seamless',         name: 'CMC GEM',      shortName: 'GEM',    r: 245, g: 158, b: 11  },
+  { key: 'meteofrance_seamless',     name: 'Météo-France', shortName: 'MF',     r: 219, g: 39,  b: 119 },
+  { key: 'meteoswiss_icon_seamless', name: 'MeteoSwiss',   shortName: 'MSwiss', r: 5,   g: 150, b: 105 },
 ];
 
 // ─── Stats ─────────────────────────────────────────────────────────────────────
@@ -82,6 +90,16 @@ export function processRaw(raw) {
     : null;
 
   return { times, stats, windStats, count: tempKeys.length };
+}
+
+// Parse a deterministic (operational) forecast response — no member columns.
+export function processRawOp(raw) {
+  const { hourly } = raw;
+  const times = hourly.time;
+  const temps = hourly.temperature_2m ?? [];
+  const winds = hourly.windspeed_10m ?? hourly.wind_speed_10m ?? [];
+  if (!times?.length) throw new Error('No time array in op response');
+  return { times, temps, winds };
 }
 
 // ─── Derived summaries ────────────────────────────────────────────────────────
