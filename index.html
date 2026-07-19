@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wedding Weather — St Paulet de Caisson</title>
+  <title>Wedding Weather — Melrose</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
@@ -15,8 +15,8 @@
     <div class="header-content">
       <div class="header-deco">&#x2014;&#x2014; &#x2726; &#x2014;&#x2014;</div>
       <h1>Wedding Weather Forecast</h1>
-      <p class="location">St Paulet de Caisson &middot; Gard, France</p>
-      <p class="wedding-dates">13 &ndash; 15 July 2026</p>
+      <p class="location">Melrose &middot; Scottish Borders</p>
+      <p class="wedding-dates">25 &ndash; 27 July 2026</p>
       <div class="header-deco">&#x2014;&#x2014; &#x2726; &#x2014;&#x2014;</div>
     </div>
   </header>
@@ -37,6 +37,58 @@
         <div class="uncertainty-note">
           Shaded bands show the most likely 50% of ensemble outcomes &mdash; wider spread means more uncertainty.
           Forecasts improve significantly in the final 5&ndash;7 days.
+        </div>
+      </section>
+
+      <!-- ── GUIDE SECTION ─────────────────────────────────────── -->
+      <section class="guide-section">
+        <h2 class="section-title">Reading the Forecasts</h2>
+        <p class="section-sub">Two complementary approaches — use them together for the clearest picture</p>
+        <div class="guide-grid">
+          <div class="guide-card">
+            <div class="guide-card-icon">&#x1F3B2;</div>
+            <h3>Ensemble Forecasts</h3>
+            <p class="guide-card-when">Best for: understanding uncertainty &amp; the range of possible outcomes</p>
+            <ul>
+              <li>Run the same model <strong>30–50 times</strong> with slightly different starting conditions</li>
+              <li>The <strong>shaded band</strong> (25–75th percentile) shows the most likely 50% of outcomes</li>
+              <li>A <strong>narrow band</strong> means high confidence; a <strong>wide band</strong> means genuine uncertainty</li>
+              <li>The <strong>median line</strong> is the "middle of the pack" — not a single best-guess run</li>
+              <li>Multiple models agreeing narrows the band further and boosts confidence</li>
+            </ul>
+            <div class="guide-card-tip">Use to answer: <em>"How confident can we be in this forecast?"</em></div>
+          </div>
+          <div class="guide-card">
+            <div class="guide-card-icon">&#x1F3AF;</div>
+            <h3>Operational (Deterministic) Forecasts</h3>
+            <p class="guide-card-when">Best for: the single most-likely scenario at higher resolution</p>
+            <ul>
+              <li>Each centre runs <strong>one high-resolution</strong> model — their best-guess forecast</li>
+              <li>Typically <strong>higher spatial resolution</strong> than ensemble runs (captures local terrain)</li>
+              <li>No spread information — you see the predicted value, not the uncertainty around it</li>
+              <li>When multiple centres <strong>agree</strong>, confidence is high; when they <strong>diverge</strong>, there's real uncertainty</li>
+              <li>More useful closer to the event (&lt;5 days) when uncertainty naturally reduces</li>
+            </ul>
+            <div class="guide-card-tip">Use to answer: <em>"What exactly does each centre predict will happen?"</em></div>
+          </div>
+        </div>
+        <div class="guide-timeline">
+          <h3 class="guide-timeline-title">Forecast Confidence Over Time</h3>
+          <div class="timeline-bar">
+            <div class="timeline-phase phase-low">
+              <span class="phase-label">Low confidence</span>
+              <span class="phase-days">Now · 10+ days out</span>
+            </div>
+            <div class="timeline-phase phase-med">
+              <span class="phase-label">Growing confidence</span>
+              <span class="phase-days">5–10 days out</span>
+            </div>
+            <div class="timeline-phase phase-high">
+              <span class="phase-label">High confidence</span>
+              <span class="phase-days">0–5 days out</span>
+            </div>
+          </div>
+          <p class="guide-timeline-note">Ensemble spread and inter-model divergence both narrow as the event approaches. Forecasts for 25–27 July will sharpen considerably in the final week.</p>
         </div>
       </section>
 
@@ -68,6 +120,19 @@
           </div>
           <div class="chart-wrap chart-wrap-lg">
             <canvas id="chart-wind-comparison"></canvas>
+          </div>
+        </div>
+
+        <!-- Precipitation comparison chart -->
+        <div class="chart-section">
+          <div class="model-header">
+            <div class="model-title-group">
+              <h3>Precipitation</h3>
+              <p class="model-desc">Hourly precipitation rate &middot; ensemble spread shows uncertainty in timing and intensity</p>
+            </div>
+          </div>
+          <div class="chart-wrap chart-wrap-lg">
+            <canvas id="chart-precip-comparison"></canvas>
           </div>
         </div>
 
@@ -105,6 +170,18 @@
           </div>
         </div>
 
+        <div class="chart-section">
+          <div class="model-header">
+            <div class="model-title-group">
+              <h3>Precipitation</h3>
+              <p class="model-desc">Hourly precipitation rate &middot; deterministic best-guess per centre</p>
+            </div>
+          </div>
+          <div class="chart-wrap chart-wrap-lg">
+            <canvas id="chart-op-precip"></canvas>
+          </div>
+        </div>
+
         <p class="legend-compact">
           <span class="lc-line"></span>Single deterministic run per model&ensp;&middot;&ensp;Darker gridlines = day boundaries&ensp;&middot;&ensp;Hover for hourly values
         </p>
@@ -126,6 +203,6 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-  <script type="module" src="app.js?v=12"></script>
+  <script type="module" src="app.js?v=13"></script>
 </body>
 </html>

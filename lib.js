@@ -1,17 +1,17 @@
 // Pure functions — no DOM or side-effects. Imported by app.js and the test suite.
 
 export const CONFIG = {
-  lat:   44.275,
-  lon:   4.527,
-  start: '2026-07-12',
-  end:   '2026-07-16',
-  tz:    'Europe/Paris',
+  lat:   55.598,
+  lon:   -2.726,
+  start: '2026-07-22',
+  end:   '2026-07-29',
+  tz:    'Europe/London',
 };
 
 export const WEDDING_DAYS = [
-  { date: '2026-07-13', display: '13 July' },
-  { date: '2026-07-14', display: '14 July' },
-  { date: '2026-07-15', display: '15 July' },
+  { date: '2026-07-25', display: '25 July' },
+  { date: '2026-07-26', display: '26 July' },
+  { date: '2026-07-27', display: '27 July' },
 ];
 
 // All ensemble models. `keys` are tried in order; first success wins.
@@ -89,17 +89,26 @@ export function processRaw(raw) {
     ? times.map((_, i) => statsAt(windMembers, i))
     : null;
 
-  return { times, stats, windStats, count: tempKeys.length };
+  const precipKeys = Object.keys(hourly)
+    .filter(k => /^precipitation_member\d+$/.test(k))
+    .sort();
+  const precipMembers = precipKeys.map(k => hourly[k]);
+  const precipStats = precipMembers.length
+    ? times.map((_, i) => statsAt(precipMembers, i))
+    : null;
+
+  return { times, stats, windStats, precipStats, count: tempKeys.length };
 }
 
 // Parse a deterministic (operational) forecast response — no member columns.
 export function processRawOp(raw) {
   const { hourly } = raw;
   const times = hourly.time;
-  const temps = hourly.temperature_2m ?? [];
-  const winds = hourly.windspeed_10m ?? hourly.wind_speed_10m ?? [];
+  const temps   = hourly.temperature_2m ?? [];
+  const winds   = hourly.windspeed_10m ?? hourly.wind_speed_10m ?? [];
+  const precips = hourly.precipitation ?? [];
   if (!times?.length) throw new Error('No time array in op response');
-  return { times, temps, winds };
+  return { times, temps, winds, precips };
 }
 
 // ─── Derived summaries ────────────────────────────────────────────────────────

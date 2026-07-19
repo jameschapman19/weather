@@ -1,7 +1,7 @@
 import {
   CONFIG, WEDDING_DAYS, MODELS, OP_MODELS,
   pct, processRaw, processRawOp, daytimeSummary, dayName, tempDesc, windDesc, multiModelAgreement,
-} from './lib.js?v=12';
+} from './lib.js?v=13';
 
 // ─── API ──────────────────────────────────────────────────────────────────────
 
@@ -9,7 +9,7 @@ async function fetchModel(key) {
   const u = new URL('https://ensemble-api.open-meteo.com/v1/ensemble');
   u.searchParams.set('latitude',   CONFIG.lat);
   u.searchParams.set('longitude',  CONFIG.lon);
-  u.searchParams.set('hourly',     'temperature_2m,windspeed_10m');
+  u.searchParams.set('hourly',     'temperature_2m,windspeed_10m,precipitation');
   u.searchParams.set('models',     key);
   u.searchParams.set('start_date', CONFIG.start);
   u.searchParams.set('end_date',   CONFIG.end);
@@ -26,7 +26,7 @@ async function fetchOpModel(model) {
   const u = new URL('https://api.open-meteo.com/v1/forecast');
   u.searchParams.set('latitude',   CONFIG.lat);
   u.searchParams.set('longitude',  CONFIG.lon);
-  u.searchParams.set('hourly',     'temperature_2m,windspeed_10m');
+  u.searchParams.set('hourly',     'temperature_2m,windspeed_10m,precipitation');
   u.searchParams.set('models',     model.key);
   u.searchParams.set('start_date', CONFIG.start);
   u.searchParams.set('end_date',   CONFIG.end);
@@ -335,10 +335,18 @@ function opLineChart(canvasId, opResults, {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
+const fmtP = v => v == null ? '–' : `${v.toFixed(1)} mm`;
+
 const WIND_YAXIS = {
   yLabel: 'Wind Speed (km/h)',
   yTick:  v => `${Math.round(v)} km/h`,
   fmtVal: fmtW,
+};
+
+const PRECIP_YAXIS = {
+  yLabel: 'Precipitation (mm/h)',
+  yTick:  v => `${v.toFixed(1)} mm`,
+  fmtVal: fmtP,
 };
 
 async function main() {
@@ -384,15 +392,17 @@ async function main() {
       const pad = Math.max((hi - lo) * 0.06, 1);
       return { yMin: forceMinZero ? 0 : Math.floor(lo - pad), yMax: Math.ceil(hi + pad) };
     };
-    const tempBounds = globalBounds('stats');
-    const windBounds = globalBounds('windStats', true);
+    const tempBounds   = globalBounds('stats');
+    const windBounds   = globalBounds('windStats',   true);
+    const precipBounds = globalBounds('precipStats', true);
 
     // Glance section
     renderGlance(results);
 
-    // Comparison charts (temperature + wind) — ensemble
-    comparisonChart('chart-comparison', results, 'stats', tempBounds);
-    comparisonChart('chart-wind-comparison', results, 'windStats', { ...WIND_YAXIS, ...windBounds });
+    // Comparison charts (temperature, wind, precip) — ensemble
+    comparisonChart('chart-comparison',      results, 'stats',       tempBounds);
+    comparisonChart('chart-wind-comparison', results, 'windStats',   { ...WIND_YAXIS,   ...windBounds });
+    comparisonChart('chart-precip-comparison', results, 'precipStats', { ...PRECIP_YAXIS, ...precipBounds });
 
     // Operational (deterministic) line charts — include ensemble bounds for comparability
     const opTempBounds = (() => {
@@ -418,8 +428,20 @@ async function main() {
       const pad = Math.max(hi * 0.06, 1);
       return { yMin: 0, yMax: Math.ceil(hi + pad) };
     })();
-    opLineChart('chart-op-temp', opResults, { ...opTempBounds });
-    opLineChart('chart-op-wind', opResults, { ...WIND_YAXIS, dataKey: 'winds', ...opWindBounds });
+    const opPrecipBounds = (() => {
+      let hi = -Infinity;
+      for (const { data } of opResults) {
+        if (!data?.precips?.length) continue;
+        for (const v of data.precips) { if (Number.isFinite(v) && v > hi) hi = v; }
+      }
+      if (Number.isFinite(precipBounds.yMax) && precipBounds.yMax > hi) hi = precipBounds.yMax;
+      if (!isFinite(hi)) return precipBounds;
+      const pad = Math.max(hi * 0.06, 0.1);
+      return { yMin: 0, yMax: Math.ceil((hi + pad) * 10) / 10 };
+    })();
+    opLineChart('chart-op-temp',   opResults, { ...opTempBounds });
+    opLineChart('chart-op-wind',   opResults, { ...WIND_YAXIS,   dataKey: 'winds',   ...opWindBounds });
+    opLineChart('chart-op-precip', opResults, { ...PRECIP_YAXIS, dataKey: 'precips', ...opPrecipBounds });
 
     document.getElementById('last-updated').textContent =
       `Loaded ${new Date().toLocaleString('en-GB', { dateStyle:'medium', timeStyle:'short' })}`;
