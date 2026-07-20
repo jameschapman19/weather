@@ -4,14 +4,13 @@ export const CONFIG = {
   lat:   55.598,
   lon:   -2.726,
   start: '2026-07-22',
-  end:   '2026-07-29',
+  end:   '2026-07-27',
   tz:    'Europe/London',
 };
 
 export const WEDDING_DAYS = [
+  { date: '2026-07-24', display: '24 July' },
   { date: '2026-07-25', display: '25 July' },
-  { date: '2026-07-26', display: '26 July' },
-  { date: '2026-07-27', display: '27 July' },
 ];
 
 // All ensemble models. `keys` are tried in order; first success wins.
